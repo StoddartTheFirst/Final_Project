@@ -444,6 +444,30 @@ class MyDatabase {
 		}
 	}
 
+	public void expensesByDate(String cid, String date, String date2)
+	{
+		try
+		{
+			String sqlMessage = "SELECT PurchaseID, CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department FROM BuysFrom WHERE Date BETWEEN ? AND ? AND (? IS NULL OR Councillor = ?);";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			statement.setString(1, date);
+			statement.setString(2, date2);
+			statement.setString(3, cid);
+			statement.setString(4, cid);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|t|\t%-20s\t|", "PurchaseID", "CID", "Date", "Vendor", "ExpenseType", "Description", "Account", "Amount", "Department"));
+			System.out.println("---------------------------------------------------------------------------------------------------------------");
+			while(resultSet.next())
+			{
+				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
 	public void perfectCouncillorsByDate(String cid, String date, String date2)
 	{
 		try
