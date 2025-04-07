@@ -226,6 +226,7 @@ class MyDatabase {
 	}
 
 	//Queries
+	/*1*****************/
 	public void searchWard(String ward) {
 		try {
 			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward WHERE Ward.WardE LIKE %?% OR Ward.WardF LIKE %?%;";
@@ -395,6 +396,30 @@ class MyDatabase {
 		}
 	}
 
+	public void lobbiesByCouncillor(String cid)
+	{
+		try
+		{
+			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, CID, Date, Subject, IntendedOutcome"
+					+ "FROM Councillors NATURAL JOIN Lobbies"
+					+ "WHERE Councillors.CID=? Lobbies.Date DESC;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			statement.setString(1, cid);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","LID", "Owner", "Business", "ClientBusiness", "CID", "Date", "Subject", "IntendedOutcome"));
+			System.out.println("---------------------------------------------------------------------------------------------------------------");
+			while(resultSet.next())
+			{
+				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	/*2************/
 	public void giftsByDate(String cid, String date, String date2)
 	{
 		try
@@ -411,6 +436,30 @@ class MyDatabase {
 			while(resultSet.next())
 			{
 				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9), resultSet.getString(10)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void perfectCouncillorsByDate(String cid, String date, String date2)
+	{
+		try
+		{
+			String sqlMessage = "WITH CLobbies AS (SELECT * FROM Lobbies WHERE Date BETWEEN ? AND ?), CGifts AS (SELECT * FROM Gifts WHERE DateGifted BETWEEN ? AND ?) SELECT Councillors.CID, Councillors.name FROM Councillors WHERE NOT EXISTS (SELECT Councillors.CID, Councillors.name FROM Councillors NATURAL JOIN CLobbies NATURAL JOIN CGifts);";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			statement.setString(1, date);
+			statement.setString(2, date2);
+			statement.setString(3, date);
+			statement.setString(4, date2);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|", "CID", "Councillor"));
+			System.out.println("---------------------------------------------------------------------------------------------------------------");
+			while(resultSet.next())
+			{
+				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
 			}
 		}
 		catch (SQLException e)
@@ -441,6 +490,7 @@ class MyDatabase {
 		}
 	}
 
+	/*3*********************/
 	public void deleteTables() 
 	{ 
     		try 
