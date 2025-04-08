@@ -11,9 +11,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.sql.Types;
 
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
+
+import java.math.BigDecimal;
 
 //Main
 public class SQLServer{
@@ -220,10 +227,775 @@ class MyDatabase {
 		ResultSet resultSet = null;
 		try {
 			connection = DriverManager.getConnection(connectionURL);
+			createTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}	
 	}
+
+	//CREATE TABLES 
+	public void createTables() {
+		Statement stmt = null;
+		try {
+			// Turn off auto-commit to start a transaction.
+			connection.setAutoCommit(false);
+			
+			stmt = connection.createStatement();
+			
+			// 1. Create Ward table
+			stmt.executeUpdate(
+				"CREATE TABLE Ward (" +
+				"  WID INT PRIMARY KEY IDENTITY(1,1), " +
+				"  WardE NVARCHAR(255), " +
+				"  WardF NVARCHAR(255)" +
+				");"
+			);
+			
+			// 2. Create Councillors table (with foreign key to Ward)
+			stmt.executeUpdate(
+				"CREATE TABLE Councillors (" +
+				"  CID INT PRIMARY KEY IDENTITY(1,1), " +
+				"  WID INT, " +
+				"  Present BIT, " +
+				"  Name NVARCHAR(255), " +
+				"  Phone NVARCHAR(50), " +
+				"  Fax NVARCHAR(50), " +
+				"  WebsiteURL NVARCHAR(255), " +
+				"  FOREIGN KEY (WID) REFERENCES Ward(WID)" +
+				");"
+			);
+			
+			// 3. Create Election table
+			stmt.executeUpdate(
+				"CREATE TABLE Election (" +
+				"  ElectionDate DATE, " +
+				"  CID INT, " +
+				"  Type NVARCHAR(100), " +
+				"  Position NVARCHAR(100), " +
+				"  Votes INT, " +
+				"  PRIMARY KEY (ElectionDate, CID), " +
+				"  FOREIGN KEY (CID) REFERENCES Councillors(CID)" +
+				");"
+			);
+			
+			// 4. Create YearsServed table
+			stmt.executeUpdate(
+				"CREATE TABLE YearsServed (" +
+				"  CID INT, " +
+				"  Year INT, " +
+				"  PRIMARY KEY (CID, Year), " +
+				"  FOREIGN KEY (CID) REFERENCES Councillors(CID)" +
+				");"
+			);
+			
+			// 5. Create CouncilNeighbourhoods table
+			stmt.executeUpdate(
+				"CREATE TABLE CouncilNeighbourhoods (" +
+				"  CID INT, " +
+				"  Area NVARCHAR(255), " +
+				"  PRIMARY KEY (CID, Area), " +
+				"  FOREIGN KEY (CID) REFERENCES Councillors(CID)" +
+				");"
+			);
+			
+			// 6. Create ThirdParty table
+			stmt.executeUpdate(
+				"CREATE TABLE ThirdParty (" +
+				"  TID INT PRIMARY KEY IDENTITY(1,1), " +
+				"  Name NVARCHAR(255), " +
+				"  Address NVARCHAR(255), " +
+				"  Phone NVARCHAR(50), " +
+				"  Email NVARCHAR(255), " +
+				"  isBusiness BIT, " +
+				"  isVendor BIT" +
+				");"
+			);
+			
+			// 7. Create Gift table (for gift details)
+			stmt.executeUpdate(
+				"CREATE TABLE Gift (" +
+				"  GID INT PRIMARY KEY IDENTITY(1,1), " +
+				"  Description NVARCHAR(255), " +
+				"  Value DECIMAL(10,2)" +
+				");"
+			);
+			
+			// 8. Create BusinessOwner table
+			stmt.executeUpdate(
+				"CREATE TABLE BusinessOwner (" +
+				"  OwnerID INT PRIMARY KEY IDENTITY(1,1), " +
+				"  Name NVARCHAR(255), " +
+				"  TID INT, " +
+				"  FOREIGN KEY (TID) REFERENCES ThirdParty(TID)" +
+				");"
+			);
+			
+			// 9. Create Represents table
+			stmt.executeUpdate(
+				"CREATE TABLE Represents (" +
+				"  CID INT, " +
+				"  WID INT, " +
+				"  PRIMARY KEY (CID, WID), " +
+				"  FOREIGN KEY (CID) REFERENCES Councillors(CID), " +
+				"  FOREIGN KEY (WID) REFERENCES Ward(WID)" +
+				");"
+			);
+			
+			// 10. Create Participates table
+			stmt.executeUpdate(
+				"CREATE TABLE Participates (" +
+				"  Councillor INT, " +
+				"  ElectionDate DATE, " +
+				"  ElectionCID INT, " +
+				"  PRIMARY KEY (Councillor, ElectionDate, ElectionCID), " +
+				"  FOREIGN KEY (Councillor) REFERENCES Councillors(CID), " +
+				"  FOREIGN KEY (ElectionDate, ElectionCID) REFERENCES Election(ElectionDate, CID)" +
+				");"
+			);
+			
+			// 11. Create Gifts table (for gift transactions)
+			stmt.executeUpdate(
+				"CREATE TABLE Gifts (" +
+				"  GID INT, " +
+				"  DateRecorded DATE, " +
+				"  Councillor INT, " +
+				"  RecipientSelf NVARCHAR(10), " +
+				"  RecipientDependent NVARCHAR(10), " +
+				"  RecipientStaff NVARCHAR(10), " +
+				"  Source INT, " +
+				"  DateGifted DATE, " +
+				"  Reason NVARCHAR(255), " +
+				"  Intent NVARCHAR(255), " +
+				"  PRIMARY KEY (GID, Councillor), " +
+				"  FOREIGN KEY (GID) REFERENCES Gift(GID), " +
+				"  FOREIGN KEY (Councillor) REFERENCES Councillors(CID), " +
+				"  FOREIGN KEY (Source) REFERENCES ThirdParty(TID)" +
+				");"
+			);
+			
+			// 12. Create BuysFrom table
+			stmt.executeUpdate(
+				"CREATE TABLE BuysFrom (" +
+				"  PurchaseID INT PRIMARY KEY IDENTITY(1,1), " +
+				"  CID INT, " +
+				"  Date DATE, " +
+				"  Vendor INT, " +
+				"  ExpenseType NVARCHAR(100), " +
+				"  Description NVARCHAR(255), " +
+				"  Account NVARCHAR(100), " +
+				"  Amount DECIMAL(10,2), " +
+				"  Department NVARCHAR(100), " +
+				"  FOREIGN KEY (CID) REFERENCES Councillors(CID), " +
+				"  FOREIGN KEY (Vendor) REFERENCES ThirdParty(TID)" +
+				");"
+			);
+			
+			// Commit the transaction if everything is successful.
+			connection.commit();
+			System.out.println("Tables created successfully.");
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			try {
+				connection.rollback();
+				System.out.println("Rolled back due to error.");
+			} catch (SQLException rollbackEx) {
+				rollbackEx.printStackTrace();
+			}
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				connection.setAutoCommit(true);
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		}
+	}
+
+	public void fillTables(){
+		String councilCsv = "council_data.csv";
+		String electionCsv = "elections.csv";
+		String giftsCsv = "gifts.csv";
+		String expensesCsv = "council_expenses.csv";
+		String lobbyistCsv = "lobbyist_registry.csv";
+
+		try{
+			connection.setAutoCommit(false);
+			// 1. Wards
+			Map<String, Integer> wardMap = populateWards(councilCsv);
+
+			// 2. Councillors
+			Map<String, Integer> councillorMap = populateCouncillors(councilCsv, wardMap);
+
+			// 3. CouncilNeighbourhoods
+			populateCouncilNeighbourhoods(councilCsv, councillorMap);
+
+			// 4. Represents
+			populateRepresentsTable(councilCsv, councillorMap, wardMap);
+
+			// 5. Elections
+			populateElections(electionCsv, councillorMap);
+
+			// 6. YearsServed
+			populateYearsServed(councilCsv, councillorMap);
+
+			// 7. Participates
+			populateParticipates(electionCsv, councillorMap);
+
+			// 8. ThirdParty - Vendors from Expenses
+			Map<String, Integer> thirdPartyMap = new HashMap<String, Integer>();
+			populateThirdPartyVendors(lobbyistCsv, thirdPartyMap);
+
+			// 9. ThirdParty - Businesses from Lobbyist Registry
+			populateThirdPartyBusinesses(expensesCsv, thirdPartyMap);
+
+			// 10. BuysFrom
+			populateBuysFrom(expensesCsv, councillorMap, thirdPartyMap);
+
+			// 11. Gifts (Gift + Gifts tables)
+			populateGiftTable(giftsCsv);
+			populateGifts(giftsCsv, councillorMap, thirdPartyMap);
+			connection.commit();
+
+			System.out.println("✅ All tables populated successfully.");
+		}
+		catch (IOException | SQLException e) {
+			try {
+				connection.rollback(); // Rollback on failure
+				System.err.println("Rolled back changes.");
+				e.printStackTrace();
+			} catch (SQLException ex) {
+				System.err.println("Failed to rollback: " + ex.getMessage());
+
+			}
+		} finally {
+			try{
+				connection.setAutoCommit(true);
+			}// Restore default
+			catch (SQLException c){
+				System.err.println("couldnt reset autocommit");
+			}
+		}
+	}
+
+
+	//DELETE THE TABLES
+	//do it in an order that doesnt break foreign key constrainsts
+	public void deleteTables() {
+		String[] dropOrder = {
+			"Participates",
+			"Gifts",
+			"BuysFrom",
+			"Represents",
+			"BusinessOwner",
+			"CouncilNeighbourhoods",
+			"YearsServed",
+			"Election",
+			"Councillors",
+			"Gift",
+			"ThirdParty",
+			"Ward"
+		};
+	
+		try (Statement stmt = connection.createStatement()) {
+			connection.setAutoCommit(false);
+			for (String table : dropOrder) {
+				//only delete the tables if they exist
+				stmt.executeUpdate("IF OBJECT_ID('" + table + "', 'U') IS NOT NULL DROP TABLE " + table + ";");
+				System.out.println("Dropped table: " + table);
+			}
+			connection.commit();
+		}
+		catch (SQLException e){
+			try{
+				connection.rollback();
+				connection.setAutoCommit(true);
+			}
+			catch (SQLException r){
+				System.err.println("At this point you just laugh ");
+			}
+		}
+	}
+
+
+	//return a map of the wards name to its generated primary keys
+	public Map<String, Integer> populateWards(String csvFile) throws IOException, SQLException {
+		Map<String, Integer> wardMap = new HashMap<>();
+		try(
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertWard = connection.prepareStatement(
+				"INSERT INTO Ward (WardE, WardF) VALUES (?, ?)",
+				Statement.RETURN_GENERATED_KEYS
+			);
+		)
+		{
+			String line = br.readLine();
+
+			//read line by line and extract the columns we need for wards 
+			while ((line = br.readLine()) != null) {
+				//only split on a comma that is not inside a quotation mark 
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+
+				//take out any accidental spaces in the data
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+				String wardE = parts[0];
+				String wardF = parts[2];
+		
+				if (!wardMap.containsKey(wardE)) {
+					insertWard.setString(1, wardE);
+					insertWard.setString(2, wardF);
+					insertWard.executeUpdate();
+					
+					//We need to keep track of the keys so that councillors can reference the correct ward
+					ResultSet rs = insertWard.getGeneratedKeys();
+					if (rs.next()) wardMap.put(wardE, rs.getInt(1));
+				}
+			}
+		}
+		return wardMap;
+	}
+
+
+	//Virtually identical procedure to populate wards
+	/*
+	could have combined them into one function but 
+	seperated them for readability and atomicity
+	*/
+	public Map<String, Integer> populateCouncillors(String csvFile, Map<String, Integer> wardMap) throws IOException, SQLException {
+		Map<String, Integer> councillorMap = new HashMap<>();
+		try(
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertCouncillor = connection.prepareStatement(
+				"INSERT INTO Councillors (WID, Present, Name, Phone, Fax, WebsiteURL) VALUES (?, ?, ?, ?, ?, ?)",
+				Statement.RETURN_GENERATED_KEYS
+			);
+		)
+		{
+			String line = br.readLine();
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+		
+				String wardE = parts[0];
+				boolean present = parts[1].equalsIgnoreCase("true");
+				String name = parts[4];
+				String phone = parts[7];
+				String fax = parts[8];
+				String website = parts[9];
+		
+				//just in case we got bad data
+				int wid = wardMap.getOrDefault(wardE, -1);
+				if (wid == -1) 
+				throw new IllegalStateException("Ward not found for councillor '" + name + "' in ward '" + wardE + "'");
+				
+		
+				insertCouncillor.setInt(1, wid);
+				insertCouncillor.setBoolean(2, present);
+				insertCouncillor.setString(3, name);
+				insertCouncillor.setString(4, phone);
+				insertCouncillor.setString(5, fax);
+				insertCouncillor.setString(6, website);
+				insertCouncillor.executeUpdate();
+		
+				ResultSet rs = insertCouncillor.getGeneratedKeys();
+				if (rs.next()) {
+					councillorMap.put(name, rs.getInt(1));
+				}
+			}
+		}//try
+		return councillorMap;
+	}
+
+	public void populateRepresentsTable(String csvFile,
+                                           Map<String, Integer> councillorMap,
+                                           Map<String, Integer> wardMap) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertRepresents = connection.prepareStatement(
+				"INSERT INTO Represents (CID, WID) VALUES (?, ?)")
+		) {
+			String line = br.readLine(); // skip header
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+
+				String councillorName = parts[4];
+				String wardName = parts[0];
+
+				Integer cid = councillorMap.get(councillorName);
+				Integer wid = wardMap.get(wardName);
+
+				if (cid == null || wid == null) {
+					System.err.println("Skipping row — missing CID or WID: " + councillorName + " | " + wardName);
+					System.exit(0);
+				}
+
+				insertRepresents.setInt(1, cid);
+				insertRepresents.setInt(2, wid);
+				insertRepresents.addBatch();
+			}
+			insertRepresents.executeBatch();
+		}
+	}
+	
+	public void populateCouncilNeighbourhoods(String csvFile, Map<String, Integer> councillorMap) throws IOException, SQLException {
+		try(
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertNeighbourhood = connection.prepareStatement(
+				"INSERT INTO CouncilNeighbourhoods (CID, Area) VALUES (?, ?)"
+			);
+		)
+		{
+			String line = br.readLine();
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+		
+				String name = parts[4];
+
+				//we have to check if neighbourhoods exist because the mayors have none 
+				String neighbourhoods = parts.length > 10 ? parts[10].replaceAll("^\"(.*)\"$", "$1") : "";
+				Integer cid = councillorMap.get(name);
+
+				//some lines dont have neighbourhoods 
+				//probably should throw an exception here if there's no matching cid
+				if (cid == null || neighbourhoods.isEmpty()) continue;
+		
+				for (String area : neighbourhoods.split(",")) {
+					area = area.trim();
+					if (!area.isEmpty()) {
+						insertNeighbourhood.setInt(1, cid);
+						insertNeighbourhood.setString(2, area);
+						insertNeighbourhood.addBatch();
+					}
+				}
+				insertNeighbourhood.executeBatch();
+			}
+		}//try 
+	}
+
+	public void populateElections(String csvFile, Map<String, Integer> councillorMap) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertElection = connection.prepareStatement(
+				"INSERT INTO Election (Date, CID, Type, Position, Votes) VALUES (?, ?, ?, ?, ?)")
+		) {
+			String line = br.readLine(); // Skip header
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				String date = parts[0];
+				String type = parts[1];
+				String candidate = parts[3];
+				String position = parts[4];
+				int votes = Integer.parseInt(parts[5]);
+	
+				Integer cid = councillorMap.get(candidate);
+				if (cid == null) {
+					throw new IllegalStateException("Unknown candidate: " + candidate);
+				}
+	
+				insertElection.setString(1, date);
+				insertElection.setInt(2, cid);
+				insertElection.setString(3, type);
+				insertElection.setString(4, position);
+				insertElection.setInt(5, votes);
+				insertElection.addBatch();
+			}
+			insertElection.executeBatch();
+		}
+	}
+
+	public void populateYearsServed(String csvFile, Map<String, Integer> councillorMap) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertYears = connection.prepareStatement(
+				"INSERT INTO YearsServed (CID, Year) VALUES (?, ?)")
+		) {
+			String line = br.readLine(); // skip header
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				String candidate = parts[3];
+				String date = parts[0];
+				Integer cid = councillorMap.get(candidate);
+				if (cid == null) {
+					throw new IllegalStateException("Unknown candidate: " + candidate);
+				}
+	
+				int year = Integer.parseInt(date.split(" ")[2]); // assumes format like "October 06 1971"
+				insertYears.setInt(1, cid);
+				insertYears.setInt(2, year);
+				insertYears.addBatch();
+			}
+			insertYears.executeBatch();
+		}
+	}
+
+	public void populateParticipates(String csvFile, Map<String, Integer> councillorMap) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertParticipates = connection.prepareStatement(
+				"INSERT INTO Participates (Councillor, Election) VALUES (?, ?)")
+		) {
+			String line = br.readLine(); 
+
+			Set<String> candidatekeys = new HashSet<>();
+
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				String candidate = parts[3];
+				String date = parts[0];
+				Integer cid = councillorMap.get(candidate);
+				if (cid == null) {
+					throw new IllegalStateException("Unknown candidate: " + candidate);
+				}
+
+				//only add unique pairs of councillor,date
+				String key = cid + "|" + date;
+				if(candidatekeys.contains(key)) continue;
+				candidatekeys.add(key);
+	
+				insertParticipates.setInt(1, cid);
+				insertParticipates.setString(2, date);
+				insertParticipates.addBatch();
+			}
+			insertParticipates.executeBatch();
+		}
+	}
+
+	/*
+	 * We have two third party functions because thirdparty entities come from separate csv's
+	 */
+
+	public void populateThirdPartyVendors(String csvFile, Map<String, Integer> vendorMap) throws IOException, SQLException {
+
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertVendor = connection.prepareStatement(
+				"INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
+				Statement.RETURN_GENERATED_KEYS
+			)
+		) {
+			String line = br.readLine(); 
+	
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				String vendor = parts[3];
+				if (vendor.isEmpty() || vendorMap.containsKey(vendor)) continue;
+	
+				insertVendor.setString(1, vendor); // Name
+				insertVendor.setString(2, null);// Address
+				insertVendor.setString(3, null);// Phone
+				insertVendor.setString(4, null); // Email
+				insertVendor.setBoolean(5, true);// isBusiness
+				insertVendor.setBoolean(6, true);// isVendor
+				insertVendor.executeUpdate();
+	
+				ResultSet rs = insertVendor.getGeneratedKeys();
+				if (rs.next()) {
+					vendorMap.put(vendor, rs.getInt(1));
+				}
+			}
+		}
+	}
+
+	/*
+	 * Third parties that are businesses
+	 */
+	public void populateThirdPartyBusinesses(String csvFile, Map<String, Integer> thirdPartyMap) throws IOException, SQLException {
+        try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+            PreparedStatement insertThirdParty = connection.prepareStatement(
+                    "INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
+            );
+		){
+			String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+
+                String businessName = parts[1];
+                if (businessName.isEmpty() || thirdPartyMap.containsKey(businessName)) continue;
+
+                String address = parts[2];
+                String phone = parts[3];
+                String email = parts[4];
+
+                insertThirdParty.setString(1, businessName);
+                insertThirdParty.setString(2, address);
+                insertThirdParty.setString(3, phone);
+                insertThirdParty.setString(4, email);
+                insertThirdParty.setBoolean(5, true);  // isBusiness
+                insertThirdParty.setBoolean(6, false); // isVendor
+                insertThirdParty.executeUpdate();
+
+                ResultSet rs = insertThirdParty.getGeneratedKeys();
+                if (rs.next()) {
+                    int tid = rs.getInt(1);
+                    thirdPartyMap.put(businessName, tid);
+                }
+            }
+        }//try
+		
+    }
+
+	//populate business owners 
+    public void populateBusinessOwners(String csvFile, Map<String, Integer> thirdPartyMap) throws IOException, SQLException {
+        try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+            PreparedStatement insertOwner = connection.prepareStatement(
+                    "INSERT INTO BusinessOwner (Name, TID) VALUES (?, ?)"
+            );
+		){
+			String line = br.readLine(); 
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+
+                String clientBusiness = parts[5];
+                String clientOwner = parts[6];
+
+                if (clientBusiness.isEmpty() || clientOwner.isEmpty()) continue;
+                Integer tid = thirdPartyMap.get(clientBusiness);
+                if (tid == null) continue;
+
+                insertOwner.setString(1, clientOwner);
+                insertOwner.setInt(2, tid);
+                insertOwner.addBatch();
+            }
+            insertOwner.executeBatch();
+		}//try
+    }
+
+	//populate buys from 
+	public void populateBuysFrom(String csvFile, Map<String, Integer> councillorMap, Map<String, Integer> vendorMap) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertPurchase = connection.prepareStatement(
+				"INSERT INTO BuysFrom (CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+			)
+		) {
+			String line = br.readLine();
+	
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				String councillorName = parts[1];
+				String vendor = parts[3];
+	
+				Integer cid = councillorMap.get(councillorName);
+				Integer tid = vendorMap.get(vendor);
+	
+				//need to throw exception here 
+				if (cid == null || tid == null) continue;
+	
+				insertPurchase.setInt(1, cid); // CID
+				insertPurchase.setString(2, parts[2]); // Date
+				insertPurchase.setInt(3, tid); // Vendor (TID)
+				insertPurchase.setString(4, parts[4]); // ExpenseType
+				insertPurchase.setString(5, parts[5]); // Description
+				insertPurchase.setString(6, parts[6]); // Account
+				insertPurchase.setBigDecimal(7, new BigDecimal(parts[7])); // Amount
+				insertPurchase.setString(8, parts.length > 8 ? parts[8] : null); // Department
+				insertPurchase.addBatch();
+			}
+
+			insertPurchase.executeBatch();
+		}
+	}
+
+	public void populateGiftTable(String csvFile) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertGift = connection.prepareStatement(
+				"INSERT INTO Gift (GID, Description, Value) VALUES (?, ?, ?)")
+		) {
+			String line = br.readLine(); 
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				int gid = Integer.parseInt(parts[0]);
+				String description = parts[8];
+				String valueStr = parts[11];
+				BigDecimal value = valueStr.isEmpty() ? null : new BigDecimal(valueStr);
+	
+				insertGift.setInt(1, gid);
+				insertGift.setString(2, description);
+				if (value == null)
+					insertGift.setNull(3, Types.DECIMAL);
+				else
+					insertGift.setBigDecimal(3, value);
+	
+				insertGift.addBatch();
+			}
+			insertGift.executeBatch();
+		}
+	}
+
+
+	public void populateGifts(String csvFile,
+                                      Map<String, Integer> councillorMap,
+                                      Map<String, Integer> thirdPartyMap) throws IOException, SQLException {
+    try (
+        BufferedReader br = new BufferedReader(new FileReader(csvFile));
+        PreparedStatement insertGifts = connection.prepareStatement(
+            "INSERT INTO Gifts (GID, DateRecorded, Councillor, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    ) {
+        String line = br.readLine(); 
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+            for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+
+            int gid = Integer.parseInt(parts[0]);
+            String dateRecorded = parts[1];
+            String councillorName = parts[2];
+            boolean self = parts[3].equalsIgnoreCase("yes");
+            boolean dependent = parts[4].equalsIgnoreCase("yes");
+            boolean staff = parts[5].equalsIgnoreCase("yes");
+            String sourceName = parts[6];
+            String dateGifted = parts[7];
+            String reason = parts[9];
+            String intent = parts[10];
+
+            Integer cid = councillorMap.get(councillorName);
+            Integer tid = thirdPartyMap.get(sourceName);
+
+			//throw an exception here
+            if (cid == null || tid == null) {
+                continue; // skip invalid
+            }
+
+            insertGifts.setInt(1, gid);
+            insertGifts.setString(2, dateRecorded);
+            insertGifts.setInt(3, cid);
+            insertGifts.setBoolean(4, self);
+            insertGifts.setBoolean(5, dependent);
+            insertGifts.setBoolean(6, staff);
+            insertGifts.setInt(7, tid);
+            insertGifts.setString(8, dateGifted);
+            insertGifts.setString(9, reason);
+            insertGifts.setString(10, intent);
+            insertGifts.addBatch();
+        }
+        insertGifts.executeBatch();
+    }
+}
+	
+	
+	
 
 	//Queries
 	/*1*****************/
@@ -565,7 +1337,7 @@ class MyDatabase {
 			String sqlMessage = "select Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
 								+ "from BuysFrom NATURAL JOIN Councillors  group by CID, Name order by total DESC TOP 10;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, gifter);
+			//statement.setString(1, gifter);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|", "CID", "Name", "TotalValue"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
@@ -641,6 +1413,8 @@ class MyDatabase {
 	}
 
 	/*3*********************/
+
+	/* 
 	public void deleteTables() 
 	{ 
     		try 
@@ -664,7 +1438,9 @@ class MyDatabase {
       			e.printStackTrace(); 
     		} 
   	}
+	*/
 
+	/* 
 	public void fillTables() 
 	{ 
         	String[] files = {"MakeTables.sql", "Titles.sql", "Genres.sql", "People.sql", "Professions.sql",
@@ -695,6 +1471,7 @@ class MyDatabase {
 			} 
     		} 
   	}
+	*/
 	public String truncateString(String text, int length)
 	{
 		if(text.length() <= length) return text;
