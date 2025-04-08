@@ -206,26 +206,26 @@ public class SQLServer{
 					}
 					else if(parts[0].equals("deleteTables")) 
 					{
-						System.out.println("\nABOUT TO DELETE TABLES!! ARE YOU SURE? TYPE confirm");
+						System.out.println("\nYou are about to delete all data. Type 'confirm' to procced");
 						line = console.nextLine();
 						if(line.contains("confirm")) {
-							System.out.println("BOOM! TABLES GONE!");
+							System.out.println("Attempting to delete data...");
 							db.deleteTables();
 						}
 						else {
-							System.out.println("DELETE CANCELLED!");
+							System.out.println("Delete canceled.");
 						}
 					}
 					else if(parts[0].equals("populateTables")) 
 					{
-						System.out.println("\nABOUT TO POPULATE TABLES!! ARE YOU SURE? TYPE confirm");
+						System.out.println("\nYou are about to populate the database. Type 'confirm' to procced");
 						line = console.nextLine();
 						if(line.contains("confirm")) {
-							System.out.println("BOOM! TABLES BACK IN 30 MINUTES!");
-							db.fillTables();
+							System.out.println("Attempting to populate database...");
+							db.createTables();
 						}
 						else {
-							System.out.println("REPOPULATE CANCELLED!");
+							System.out.println("Populate canceled.");
 						}	
 					}
 				}
@@ -530,7 +530,7 @@ class MyDatabase {
 			// Commit the transaction if everything is successful.
 			connection.commit();
 			System.out.println("Tables created successfully.");
-			
+			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			try {
@@ -595,7 +595,7 @@ class MyDatabase {
 			populateGifts(giftsCsv, councillorMap, thirdPartyMap);
 			connection.commit();
 
-			System.out.println("✅ All tables populated successfully.");
+			System.out.println("All tables populated successfully.");
 		}
 		catch (IOException | SQLException e) {
 			try {
