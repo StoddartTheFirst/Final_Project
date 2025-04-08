@@ -681,7 +681,7 @@ class MyDatabase {
 			PreparedStatement insertElection = connection.prepareStatement(
 				"INSERT INTO Election (Date, CID, Type, Position, Votes) VALUES (?, ?, ?, ?, ?)")
 		) {
-			String line = br.readLine(); // Skip header
+			String line = br.readLine(); 
 			while ((line = br.readLine()) != null) {
 				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
@@ -726,7 +726,7 @@ class MyDatabase {
 					throw new IllegalStateException("Unknown candidate: " + candidate);
 				}
 	
-				int year = Integer.parseInt(date.split(" ")[2]); // assumes format like "October 06 1971"
+				int year = Integer.parseInt(date.split(" ")[2]); 
 				insertYears.setInt(1, cid);
 				insertYears.setInt(2, year);
 				insertYears.addBatch();
@@ -789,13 +789,14 @@ class MyDatabase {
 				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 	
 				String vendor = parts[3];
+				//check if that vendors already in the table or there isnt one 
 				if (vendor.isEmpty() || vendorMap.containsKey(vendor)) continue;
 	
 				insertVendor.setString(1, vendor); // Name
 				insertVendor.setString(2, null);// Address
 				insertVendor.setString(3, null);// Phone
 				insertVendor.setString(4, null); // Email
-				insertVendor.setBoolean(5, true);// isBusiness
+				insertVendor.setBoolean(5, false);// isBusiness
 				insertVendor.setBoolean(6, true);// isVendor
 				insertVendor.executeUpdate();
 	
@@ -824,6 +825,8 @@ class MyDatabase {
                 for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 
                 String businessName = parts[1];
+
+				//again check if the third party entity already exists or theres no name
                 if (businessName.isEmpty() || thirdPartyMap.containsKey(businessName)) continue;
 
                 String address = parts[2];
@@ -907,6 +910,7 @@ class MyDatabase {
 				insertPurchase.setString(5, parts[5]); // Description
 				insertPurchase.setString(6, parts[6]); // Account
 				insertPurchase.setBigDecimal(7, new BigDecimal(parts[7])); // Amount
+				//these look like they're all empty in our csv so not sure what were doing with this
 				insertPurchase.setString(8, parts.length > 8 ? parts[8] : null); // Department
 				insertPurchase.addBatch();
 			}
@@ -975,7 +979,7 @@ class MyDatabase {
 
 			//throw an exception here
             if (cid == null || tid == null) {
-                continue; // skip invalid
+                continue; 
             }
 
             insertGifts.setInt(1, gid);
