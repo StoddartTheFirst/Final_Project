@@ -331,40 +331,41 @@ class MyDatabase {
 	public MyDatabase(){//constructor to establish connection to database
 		//Reads config file auth.cfg for username and password to connect to database on Uranium
 		Properties prop = new Properties();
-		String fileName = "auth.cfg";
-	
-		try{
-			FileInputStream configFile = new FileInputStream(fileName);
-			prop.load(configFile);
-			configFile.close();
-		} catch (FileNotFoundException ex){
-			System.out.println("Could not find config file.");
-			System.exit(1);
-		} catch (IOException ex) {
-			System.out.println("Error reading config file.");
-			System.exit(1);
-		}
-		String username = (prop.getProperty("username"));
-		String password = (prop.getProperty("password"));
+        String fileName = "auth.cfg";
+        try {
+            FileInputStream configFile = new FileInputStream(fileName);
+            prop.load(configFile);
+            configFile.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("Could not find config file.");
+            System.exit(1);
+        } catch (IOException ex) {
+            System.out.println("Error reading config file.");
+            System.exit(1);
+        }
+        String username = (prop.getProperty("username"));
+        String password = (prop.getProperty("password"));
 
-		if (username == null || password == null){
-			System.out.println("Username or password not provided.");
-			System.exit(1);	
-		}
-		
-		//Creates string to connect to database
-		String connectionURL = 
-					"jdbc:sqlserver://uranium.cs.umanitoba.ca:1433;" 
-					+ "database=cs3380;" 
-					+ "user=" + username + ";"
-					+ "password=" + password + ";"
-					+ "encrypt=false;"
-					+ "trustServerCertificate=false;"
-					+ "loginTimeout=30;";
-		ResultSet resultSet = null;
+        if (username == null || password == null){
+            System.out.println("Username or password not provided.");
+            System.exit(1);
+        }
+
+        String connectionURL =
+                "jdbc:sqlserver://uranium.cs.umanitoba.ca:1433;"
+                + "database=cs3380;"
+                + "user=" + username + ";"
+                + "password="+ password +";"
+                + "encrypt=false;"
+                + "trustServerCertificate=false;"
+                + "loginTimeout=30;";
+
+        ResultSet resultSet = null;
 		try {
+			System.out.println("Attempting connection...");
 			connection = DriverManager.getConnection(connectionURL);
 			createTables();
+			System.out.println("Connection success");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}	
