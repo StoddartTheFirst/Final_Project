@@ -78,6 +78,38 @@ public class SQLServer{
 					{
 						mode = 3;
 					}
+					else if(parts[0].equals("w") && parts.length == 2)
+					{
+						db.searchWard(parts[1]);
+					}
+					else if(parts[0].equals("c") && parts.length == 3)
+					{
+						if(parts[1].equals("n"))
+						{
+							db.searchCouncillor(parts[2]);
+						}
+						else if(parts[1].equals("h"))
+						{
+							db.councillorByNBH(parts[2]);
+						}
+						else if(parts[1].equals("y"))
+						{
+							db.searchCouncilYear(parts[2]);
+						}
+						else { System.out.println("Usage: c n <name> OR c h <neighbourhood> OR c y <YYYY>"); }
+					}
+					else if(parts[0].equals("b") && parts.length == 3)
+					{
+						if(parts[1].equals("n"))
+						{
+							db.searchBusinessName(parts[2]);
+						}
+						else if(parts[1].equals("own"))
+						{
+							db.businessByOwner(parts[2]);
+						}
+						else { System.out.println("Usage: b n <name> OR b own <ownerName>"); }
+					}
 				}
 				else if(mode == 2)//Search Mode. All "Show" and "Aggregate" queries go here
 				{
@@ -88,6 +120,78 @@ public class SQLServer{
 					else if(parts[0].equals("3"))
 					{
 						mode = 3;
+					}
+					else if(parts[0].equals("c") && parts.length == 3)
+					{
+						if(parts[1].equals("e"))
+						{
+							db.expensesByCouncillor(parts[2]);
+						}
+						else if(parts[1].equals("g"))
+						{
+							db.giftsByCouncillor(parts[2]);
+						}
+						else if(parts[1].equals("l"))
+						{
+							db.lobbiesByCouncillor(parts[2]);
+						}
+						else { System.out.println("Usage: c e <CouncillorID> OR c g <CouncillorID> OR c l <CouncillorID>"); }
+					}
+					else if(parts[0].equals("r"))
+					{
+						if(parts[1].equals("e") && parts.length == 4)
+						{
+							db.expensesByDate(null, parts[2], parts[3]);
+						}
+						else if(parts[1].equals("e") && parts.length == 5)
+						{
+							db.expensesByDate(parts[4], parts[2], parts[3]);
+						}
+						else if(parts[1].equals("g") && parts.length == 4)
+						{
+							db.giftsByDate(null, parts[2], parts[3]);
+						}
+						else if(parts[1].equals("g") && parts.length == 5)
+						{
+							db.giftsByDate(parts[4], parts[2], parts[3]);
+						}
+						else { System.out.println("Usage: r e|g|l <YYYYMMDD> <YYYYMMDD> (CID)"); }
+					}
+					else if(parts[0].equals("n") && parts.length == 3)
+					{
+						db.perfectCouncillorsByDate(parts[1], parts[2]);
+					}
+					else if(parts[0].equals("v") && parts.length == 3)
+					{
+						if(parts[1].equals("e"))
+						{
+							db.totalPriceExpenses(parts[2]);
+						}
+						else if(parts[1].equals("g"))
+						{
+							db.totalPriceGifts(parts[2]);
+						}
+						else { System.out.println("Usage: v e <CouncillorID> OR v g <CouncillorID>"); }
+					}
+					else if(parts[0].equals("t") && parts.length == 2)
+					{
+						if(parts[1].equals("e"))
+						{
+							db.bigSpenders();
+						}
+						else { System.out.println("Usage: t e"); }
+					}
+					else if(parts[0].equals("s") && parts.length == 1)
+					{
+						db.electionGifts();
+					}
+					else if(parts[0].equals("g") && parts.length == 1)
+					{
+						db.giftGap();
+					}
+					else if(parts[0].equals("l") && parts.length == 1)
+					{
+						db.bigGivers();
 					}
 				}
 				else if(mode == 3)//Maintenance Mode. Delete and restore queries go here
@@ -143,24 +247,57 @@ public class SQLServer{
 		System.out.println("Welcome to the Winnipeg Council Transparency Database!");
 		System.out.println("How to use:");
 		System.out.println("-----------");
-		System.out.println("Browse Mode if you want to lookup data");
-		System.out.println("Search Mode if you want to search for relationships in data");
-		System.out.println("Maintenance Mode for clearing and re-populating the database");
-		System.out.println("Enter q to quit");
+		System.out.println("Enter '1' for Browse Mode if you want to lookup data");
+		System.out.println("Enter '2' for Search Mode if you want to search for relationships in data");
+		System.out.println("Enter '3' for Maintenance Mode for clearing and re-populating the database");
+		System.out.println("Enter 'help' at any time for detailed help, or 'q' to quit");
 	}
 	private static void printHelp(int mode) 
 	{
 		if(mode == 1)//Browse Mode
 		{
-			System.out.println("Browse Mode Commands:");		
+			System.out.println("Browse Mode Commands:");
+			System.out.println("w <name> :Lookup Ward data by <name>");
+			System.out.println("-");
+			System.out.println("c n <name> :Lookup Councillor data by <name>");
+			System.out.println("c h <neighbourhoodName>:Lookup Councillor data by <neighbourhoodName>");
+			System.out.println("c y <YYYY>:Lookup Councillor data by <YYYY> (year)");
+			System.out.println("-");
+			System.out.println("b n <name>:Lookup Business data by <name>");
+			System.out.println("b own <ownerName>:Lookup Business data by <ownerName>");
+			System.out.println("-----");
+			System.out.println("Enter 2 to enter Search Mode, 3 for Maintenance Mode, or q to quit");
 		}
 		else if(mode == 2)//Search Mode
 		{
 			System.out.println("Search Mode Commands:");
+			System.out.println("c e <CID>:Get Councillor expenses by <CID>");
+			System.out.println("c g <CID>:Get Councillor gifts received by <CID>");
+			System.out.println("c l <CID>:Get Councillor lobby activities by <CID>");
+			System.out.println("-");
+			System.out.println("r e <YYYYMMDD> <YYYYMMDD>:Show all expenses in a date range");
+			System.out.println("r g <YYYYMMDD> <YYYYMMDD>:Show all gifts in a date range");
+			System.out.println("-");
+			System.out.println("n <YYYYMMDD> <YYYYMMDD>:Show councillors that have not participated in any lobby activities or received any gifts in a date range");
+			System.out.println("-");
+			System.out.println("v e <CID>:Get expendature total by <CID>");
+			System.out.println("v g <CID>:Get total value of gifts received by <CID>");
+			System.out.println("-");
+			System.out.println("t e:Show Top 10 councillors that spend the most");
+			System.out.println("-");
+			System.out.println("s:Show Top 10 gifts that were given closest to an election");
+			System.out.println("g:Show Top 10 gifts with the largest gap between date recorded and date received");
+			System.out.println("l:Show Top 10 third-parties that have given gifts and/or preformed lobby activities");
+			System.out.println("-----");
+			System.out.println("Enter 1 to enter Browse Mode, 3 for Maintenance Mode, or q to quit");
 		}
 		else if(mode == 3)//Maintenance Mode
 		{
 			System.out.println("Maintenance Mode Commands:");
+			System.out.println("deleteTables: Clear all data");
+			System.out.println("populateTables: Restore all data");
+			System.out.println("-----");
+			System.out.println("Enter 1 to enter Browse Mode, 2 for Search Mode, or q to quit");
 		}
 	}
 
@@ -998,9 +1135,6 @@ class MyDatabase {
     }
 }
 	
-	
-	
-
 	//Queries
 	/*1*****************/
 	public void searchWard(String ward) {
@@ -1123,6 +1257,8 @@ class MyDatabase {
 		}
 	}
 
+	//2
+
 	public void expensesByCouncillor(String cid)
 	{
 		try
@@ -1195,7 +1331,6 @@ class MyDatabase {
 		}
 	}
 
-	/*2************/
 	public void giftsByDate(String cid, String date, String date2)
 	{
 		try
@@ -1244,7 +1379,7 @@ class MyDatabase {
 		}
 	}
 
-	public void perfectCouncillorsByDate(String cid, String date, String date2)
+	public void perfectCouncillorsByDate(String date, String date2)
 	{
 		try
 		{
@@ -1282,28 +1417,6 @@ class MyDatabase {
 			while(resultSet.next())
 			{
 				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-
-	public void totalPriceGiftSource(String gifter)
-	{
-		try
-		{
-			String sqlMessage = "select Gifts.source, sum(gift.value) as totalValue" 
-								+ "from Gifts join Gift on gifts.gid = gift.gid where Gifts.source = ? group by Gifts.source;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, gifter);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|", "TID", "TotalValue"));
-			System.out.println("---------------------------------------------------------------------------------------------------------------");
-			while(resultSet.next())
-			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
 			}
 		}
 		catch (SQLException e)
