@@ -364,7 +364,6 @@ class MyDatabase {
 		try {
 			System.out.println("Attempting connection...");
 			connection = DriverManager.getConnection(connectionURL);
-			createTables();
 			System.out.println("Connection success");
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -530,7 +529,6 @@ class MyDatabase {
 			
 			// Commit the transaction if everything is successful.
 			connection.commit();
-			System.out.println("Tables created successfully.");
 			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -552,11 +550,11 @@ class MyDatabase {
 	}
 
 	public void fillTables(){
-		String councilCsv = "council_data.csv";
-		String electionCsv = "elections.csv";
-		String giftsCsv = "gifts.csv";
-		String expensesCsv = "council_expenses.csv";
-		String lobbyistCsv = "lobbyist_registry.csv";
+		String councilCsv = "Council_Data.csv";
+		String electionCsv = "Elections.csv";
+		String giftsCsv = "Gifts.csv";
+		String expensesCsv = "Council_Member_Expenses.csv";
+		String lobbyistCsv = "Lobbyist_Registry.csv";
 
 		try{
 			connection.setAutoCommit(false);
@@ -1155,13 +1153,13 @@ class MyDatabase {
 		}
 	}
 
-	public void searchCouncillor(String name)
+	public void searchCouncillor(String n)
 	{
 		try
 		{
-			String sqlMessage = "SELECT CID, WID, present, name, phone, fax, websiteurl, YearsServed, Ward FROM Councillors NATURAL JOIN YearsServed WHERE Councillors.name LIKE %?%;";
+			String sqlMessage = "SELECT CID, WID, present, name, phone, fax, websiteurl, YearsServed, Ward FROM Councillors NATURAL JOIN YearsServed WHERE name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, name);
+			statement.setString(1, "%" + n + "%");
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL", "YearsServed"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
