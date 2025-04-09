@@ -1366,14 +1366,14 @@ class MyDatabase {
 	{
 		try 
 		{
-			String sqlMessage = "SELECT CID, WID, Present, Name, Phone, Fax, WebsiteURL FROM Councillors NATURAL INNER JOIN CouncilNeighbourhoods WHERE CouncilNeighbourhoods.name LIKE %?%;";
+			String sqlMessage = "SELECT Councillors.CID, Councillors.Name, WID, CouncilNeighbourhoods.Area, Councillors.Name, Phone, Fax, WebsiteURL FROM Councillors JOIN CouncilNeighbourhoods ON Councillors.CID=CouncilNeighbourhoods.CID WHERE CouncilNeighbourhoods.Area LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, nbhString);
+			statement.setString(1, "%"+nbhString+"%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
+			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "Name", "WID", "Present", "Neighbourhood Name", "Phone", "Fax", "WebsiteURL"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\\t|\\t%-10s\\t|\\t%-20s\\t|\\t%-20s\\t|\\t%-20s\\t|\\t%-20s\\t|\\t%-20s\\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-20s\\t|\\t%-10s\\t|\\t%-20s\\t|\\t%-20s\\t|\\t%-20s\\t|\\t%-20s\\t|\\t%-20s\\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
 			}
 		} 
 		catch (SQLException e)
