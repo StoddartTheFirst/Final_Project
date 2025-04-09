@@ -636,7 +636,6 @@ class MyDatabase {
 			connection.commit();
 
 			System.out.println("All tables populated successfully.");
-			System.out.println("All tables populated successfully.");
 		}
 		catch (IOException | SQLException e) {
 			try {
@@ -1571,7 +1570,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "WITH CLobbies AS (SELECT * FROM Lobbies WHERE Date BETWEEN ? AND ?), CGifts AS (SELECT * FROM Gifts WHERE DateGifted BETWEEN ? AND ?) SELECT Councillors.CID, Councillors.name FROM Councillors WHERE NOT EXISTS (SELECT Councillors.CID, Councillors.name FROM Councillors NATURAL JOIN CLobbies NATURAL JOIN CGifts);";
+			String sqlMessage = "WITH CLobbies AS (SELECT * FROM Lobbies WHERE Date BETWEEN ? AND ?), CGifts AS (SELECT * FROM Gifts WHERE DateGifted BETWEEN ? AND ?) SELECT Councillors.CID, Councillors.name FROM Councillors WHERE NOT EXISTS (SELECT Councillors.CID, Councillors.name FROM Councillors JOIN CLobbies ON Councillors.CID=CLobbies.CID JOIN CGifts ON Councillors.CID=CGifts.CID);";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, date);
 			statement.setString(2, date2);
@@ -1618,7 +1617,7 @@ class MyDatabase {
 		try
 		{
 			String sqlMessage = "select councillors.cid, sum(BuysFrom.Amount) as total" 
-								+ "from Councillors NATURAL JOIN BuysFrom  where Councillors.CID = ?  group by councillors.cid;";
+								+ "from Councillors join BuysFrom on Councillors.CID=BuysFrom.CID where Councillors.CID = ?  group by councillors.cid;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, councillor);
 			ResultSet resultSet = statement.executeQuery();
@@ -1640,7 +1639,7 @@ class MyDatabase {
 		try
 		{
 			String sqlMessage = "select Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
-								+ "from BuysFrom NATURAL JOIN Councillors  group by CID, Name order by total DESC TOP 10;";
+								+ "from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by CID, Councillors.Name order by total DESC TOP 10;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			//statement.setString(1, gifter);
 			ResultSet resultSet = statement.executeQuery();
@@ -1661,7 +1660,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift NATURAL JOIN Gifts JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC TOP 10;";
+			String sqlMessage = "SELECT Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC TOP 10;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", "GiftID", "CouncillorID", "Date Gifted"));
@@ -1717,66 +1716,8 @@ class MyDatabase {
 		}
 	}
 
-	/*3*********************/
-
-	/* 
-	public void deleteTables() 
-	{ 
-    		try 
-		{ 
-    			File myObj = new File("./SQL_Files/DeleteTables.sql"); 
-      			Scanner myReader = new Scanner(myObj); 
-      			while (myReader.hasNextLine()) 
-			{ 
-        			String data = myReader.nextLine(); 
-				try{
-					PreparedStatement statement = connection.prepareStatement(data);
-					statement.execute();
-				} catch (SQLException e) {
-					e.printStackTrace(System.out);
-				}
-      			}	 
-      			myReader.close(); 
-    		} 
-		catch (FileNotFoundException e) { 
-      			System.out.println("An error occurred."); 
-      			e.printStackTrace(); 
-    		} 
-  	}
-	*/
-
-	/* 
-	public void fillTables() 
-	{ 
-        	String[] files = {"MakeTables.sql", "Titles.sql", "Genres.sql", "People.sql", "Professions.sql",
-						"AlternateTitles.sql", "TitleGenres.sql", "PeopleProfessions.sql", "KnownFor.sql",
-						"HaveCrew.sql", "Movie.sql", "TVShow.sql", "Episode.sql"};
-    		for (int i = 0; i < files.length; i++) 
-		{ 
-			try 
-			{ 
-				System.out.println(files[i]); 
-				File myObj = new File("./SQL_Files/" + files[i]); 
-				Scanner myReader = new Scanner(myObj); 
-				while (myReader.hasNextLine()) 
-				{ 
-					String data = myReader.nextLine(); 
-					try
-					{
-						PreparedStatement statement = connection.prepareStatement(data);
-						statement.execute();
-					} catch (SQLException e) {
-						e.printStackTrace(System.out);
-					}
-				} 
-				myReader.close(); 
-			} catch (FileNotFoundException e) { 
-				System.out.println("An error occurred."); 
-				e.printStackTrace(); 
-			} 
-    		} 
-  	}
-	*/
+	
+	
 	public String truncateString(String text, int length)
 	{
 		if(text.length() <= length) return text;
