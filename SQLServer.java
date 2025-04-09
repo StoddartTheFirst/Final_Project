@@ -1318,6 +1318,253 @@ class MyDatabase {
 			insertLobbies.executeBatch();
 		}
 	}
+
+	//Full table queries
+	public void allWards()
+	{
+		try {
+			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-10d\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void allCouncillors()
+	{
+		try
+		{
+			String sqlMessage = "SELECT CID, WID, present, name, phone, fax, websiteurl from councillors;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void yearsServec()
+	{
+		try
+		{
+			String sqlMessage = "select cid, year from YearServed;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "Year"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void allNeighbourhoods()
+	{
+		try
+		{
+			String sqlMessage = "SELECT cid, area FROM CouncilNeighbourhoods;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-10s\t|\t%-20s\t|","CID", "Area"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-10d\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void allThirdParty()
+	{
+		try
+		{
+			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void allGifts()
+	{
+		try
+		{
+			String sqlMessage = "SELECT GID, Description, value FROM Gift;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|", "GID", "Description", "Value"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void allBusinessOwners()
+	{
+		try
+		{
+			String sqlMessage = "select ownerid, name, tid from BusinessOwner;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|","OwnerID", "Name", "TID"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void represents()
+	{
+		try
+		{
+			String sqlMessage = "select cid, wid from Represents;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "WID"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void participates()
+	{
+		try
+		{
+			String sqlMessage = "select councillor, election from Participates;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|","Councillor", "Election"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void gifts()
+	{
+		try
+		{
+			String sqlMessage = "select GID, DateRecorded, Councillor, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent"
+					+ "from Gifts;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","GID", "DateRecorded", "Councillor", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9), resultSet.getString(10)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void buysFrom()
+	{
+		try
+		{
+			String sqlMessage = "select PurchaseID, CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department"
+					+ "from BuysFrom;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "PurchaseID", "CID", "Date", "Vendor", "ExpenseType", "Description", "Account", "Amount", "Department"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void lobbies()
+	{
+		try
+		{
+			String sqlMessage = "select LID, Owner, Business, ClientBusiness, CID, Date, Subject, IntendedOutcome"
+					+ "from Lobbies;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "LID", "Owner", "Business", "ClientBusiness", "CID", "Date", "Subject", "IntendedOutcome"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public void owns()
+	{
+		try
+		{
+			String sqlMessage = "select ownerid, business from Owns;";
+			PreparedStatement statement = connection.prepareStatement(sqlMessage);
+			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-20s\t|\t%-20s\t|","OwnerID", "Business"));
+			System.out.println(SEPARATOR_LINE);
+			while(resultSet.next()){
+				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+			}
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.out);
+		}
+	}
 	
 	//Queries
 	/*1*****************/
