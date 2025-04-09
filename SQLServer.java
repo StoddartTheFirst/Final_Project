@@ -1407,9 +1407,9 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty WHERE ThirdParty.isBusiness=TRUE AND ThirdParty.Name LIKE %?%;";
+			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty WHERE ThirdParty.isBusiness='TRUE' AND ThirdParty.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, name);
+			statement.setString(1, "%"+name+"%");
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
@@ -1428,9 +1428,9 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty NATURAL JOIN Owns NATURAL JOIN BusinessOwner WHERE BusinessOwner.Name LIKE %?%;";
+			String sqlMessage = "SELECT ThirdParty.TID, BusinessOwner.Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty JOIN Owns ON ThirdParty.TID=Owns.Business JOIN BusinessOwner ON Owns.OwnerID=BusinessOwner.OwnerID WHERE BusinessOwner.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, owner);
+			statement.setString(1, "%"+owner+"%");
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
@@ -1452,15 +1452,15 @@ class MyDatabase {
 		try
 		{
 			String sqlMessage = "SELECT BuysFrom.PurchaseID as PurchaseID, BuysFrom.Date as Date,"
-					+ "ThirdParty as From, BuysFrom.ExpenseType as Type, BuysFrom.Account as Account,"
+					+ "ThirdParty.TID as Source, BuysFrom.ExpenseType as Type, BuysFrom.Account as Account,"
 					+ "BuysFrom.Amount as Amount, BuysFrom.Description as Description,"
-					+ "BuysFrom.Department as Department"
-					+ "FROM Councillors JOIN BuysFrom ON Councillors.CID=BuysFrom.CID JOIN ThirdParty ON BuysFrom.Vendor=ThirdParty.TID"
+					+ "BuysFrom.Department as Department "
+					+ "FROM Councillors JOIN BuysFrom ON Councillors.CID=BuysFrom.CID JOIN ThirdParty ON BuysFrom.Vendor=ThirdParty.TID "
 					+ "WHERE Councillors.CID=? ORDER BY Date DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","PurchaseID", "Date", "From", "Type", "Account", "Amount", "Description", "Department"));
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","PurchaseID", "Date", "Source", "Type", "Account", "Amount", "Description", "Department"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
 			while(resultSet.next())
 			{
@@ -1477,9 +1477,9 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT GID, DateRecorded, Councillor, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent, Gift.Description, Gift.Value"
-					+ "FROM Councillors JOIN Gifts ON Councillors.CID=Gifts.CID JOIN Gift ON Gifts.GID=Gift.GID JOIN ThirdParty ON Gifts.Source=ThirdParty.TID"
-					+ "WHERE Councillors.CID=? ORDER BY Gifts.DateGifted DESC;";
+			String sqlMessage = "SELECT Gift.GID, DateRecorded, Councillors.Name, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent, Gift.Description, Gift.Value"
+					+ " FROM Councillors JOIN Gifts ON Councillors.CID=Gifts.Councillor JOIN Gift ON Gifts.GID=Gift.GID JOIN ThirdParty ON Gifts.Source=ThirdParty.TID"
+					+ " WHERE Councillors.CID=? ORDER BY Gifts.DateGifted DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
@@ -1500,9 +1500,9 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, CID, Date, Subject, IntendedOutcome"
-					+ "FROM Councillors NATURAL JOIN Lobbies"
-					+ "WHERE Councillors.CID=? Lobbies.Date DESC;";
+			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, CID, LobbyDate, Subject, IntendedOutcome"
+					+ " FROM Councillors JOIN Lobbies ON Councillors.CID=Lobbies.CID"
+					+ " WHERE Councillors.CID=? Lobbies.LobbyDate DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
