@@ -1926,8 +1926,8 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "select Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
-								+ " from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by Councillors.CID, Councillors.Name order by total DESC TOP 10;";
+			String sqlMessage = "select TOP 10 Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
+								+ " from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by Councillors.CID, Councillors.Name order by total DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			//statement.setString(1, gifter);
 			ResultSet resultSet = statement.executeQuery();
@@ -1948,7 +1948,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC TOP 10;";
+			String sqlMessage = "SELECT TOP 10 Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", "GiftID", "CouncillorID", "Date Gifted"));
@@ -1968,14 +1968,14 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Gifts.DateRecorded)) AS diff FROM Gifts GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC TOP 10;";
+			String sqlMessage = "SELECT TOP 10 Gifts.GID, Gifts.Councillor, Gifts.DateGifted, Gifts.DateRecorded, DATEDIFF(DAY, Gifts.DateGifted, Gifts.DateRecorded) AS diff FROM Gifts GROUP BY Gifts.GID, Gifts.Councillor, Gifts.DateGifted, Gifts.DateRecorded ORDER BY diff DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", "GiftID", "CouncillorID", "Date Gifted"));
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|%-20s\t", "GiftID", "CouncillorID", "Date Gifted", "Date Recorded"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|%-20s\t", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4)));
 			}
 		}
 		catch (SQLException e)
@@ -1988,7 +1988,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT t.TID, t.Name AS ThirdPartyName,COUNT(DISTINCT g.GID) AS total_gifts, COUNT(DISTINCT l.Date) AS total_lobbies FROM ThirdParty t LEFT JOIN Gifts g ON t.TID = g.Source LEFT JOIN Lobbies l ON t.TID = l.Business GROUP BY t.TID, t.Name HAVING COUNT(g.GID) > 0 OR COUNT(l.Date) > 0 ORDER BY (COUNT(DISTINCT g.GID) + COUNT(DISTINCT l.Date)) DESC TOP 10;";
+			String sqlMessage = "SELECT TOP 10 t.TID, t.Name AS ThirdPartyName,COUNT(DISTINCT g.GID) AS total_gifts, COUNT(DISTINCT l.Date) AS total_lobbies FROM ThirdParty t LEFT JOIN Gifts g ON t.TID = g.Source LEFT JOIN Lobbies l ON t.TID = l.Business GROUP BY t.TID, t.Name HAVING COUNT(g.GID) > 0 OR COUNT(l.Date) > 0 ORDER BY (COUNT(DISTINCT g.GID) + COUNT(DISTINCT l.Date)) DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", "GiftID", "CouncillorID", "Date Gifted"));
