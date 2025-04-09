@@ -1496,9 +1496,9 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, CID, LobbyDate, Subject, IntendedOutcome"
+			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, Councillors.CID, LobbyDate, Subject, IntendedOutcome"
 					+ " FROM Councillors JOIN Lobbies ON Councillors.CID=Lobbies.CID"
-					+ " WHERE Councillors.CID=? Lobbies.LobbyDate DESC;";
+					+ " WHERE Councillors.CID=? ORDER BY Lobbies.LobbyDate DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
@@ -1543,7 +1543,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT PurchaseID, CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department FROM BuysFrom WHERE Date BETWEEN ? AND ? AND (? IS NULL OR Councillor = ?);";
+			String sqlMessage = "SELECT PurchaseID, CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department FROM BuysFrom WHERE Date BETWEEN ? AND ? AND (? IS NULL OR CID = ?);";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, date);
 			statement.setString(2, date2);
