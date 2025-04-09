@@ -1356,9 +1356,10 @@ class MyDatabase {
 			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-5s\t|%-40s\t|%-40s\t|", "WID", "WardE", "WardF"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-10d\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-5s\t|%-40s\t|%-40s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace(System.out);
@@ -1372,10 +1373,10 @@ class MyDatabase {
 			String sqlMessage = "SELECT CID, WID, present, name, phone, fax, websiteurl from councillors;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
+			System.out.println(String.format("%-5s |%-5s |%-8s |%-20s |%-20s |%-20s |%-40s |","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-5s |%-5s |%-8s |%-20s |%-20s |%-20s |%-40s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
 			}
 		}
 		catch (SQLException e)
@@ -1383,27 +1384,6 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
-
-	/* This query is redundant (searchCouncillor)
-	public void yearsServec()
-	{
-		try
-		{
-			String sqlMessage = "select cid, year from YearServed;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "Year"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
 
 	public void allNeighbourhoods()
 	{
@@ -1412,10 +1392,10 @@ class MyDatabase {
 			String sqlMessage = "SELECT cid, area FROM CouncilNeighbourhoods;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-10s\t|\t%-20s\t|","CID", "Area"));
+			System.out.println(String.format("%-5s | %-40s |","CID", "Area"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-10d\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+				System.out.println(String.format("%-5s | %-40s |", resultSet.getString(1), resultSet.getString(2)));
 			}
 		}
 		catch (SQLException e)
@@ -1431,10 +1411,10 @@ class MyDatabase {
 			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			System.out.println(String.format("%-5s | %-40s | %-20s | %-12s | %-20s | %-5s | %-5s |","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-5s | %-40s | %-20s | %-12s | %-20s | %-5s | %-5s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
 			}
 		}
 		catch (SQLException e)
