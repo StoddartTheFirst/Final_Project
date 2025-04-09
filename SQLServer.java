@@ -1927,7 +1927,7 @@ class MyDatabase {
 		try
 		{
 			String sqlMessage = "select Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
-								+ "from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by CID, Councillors.Name order by total DESC TOP 10;";
+								+ " from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by Councillors.CID, Councillors.Name order by total DESC TOP 10;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			//statement.setString(1, gifter);
 			ResultSet resultSet = statement.executeQuery();
