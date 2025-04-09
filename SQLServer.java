@@ -681,7 +681,6 @@ class MyDatabase {
 			for (String table : dropOrder) {
 				//only delete the tables if they exist
 				stmt.executeUpdate("IF OBJECT_ID('" + table + "', 'U') IS NOT NULL DROP TABLE " + table + ";");
-				System.out.println("Dropped table: " + table);
 			}
 			connection.commit();
 		}
@@ -1012,7 +1011,6 @@ class MyDatabase {
 			line = br.readLine();
 			while(line != null){
 				while (line != null && line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length < 15) {
-					System.out.println(line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length);
 					String next = br.readLine();
 					if(next == null) break;
 					line +=  " " + next;
@@ -1020,7 +1018,6 @@ class MyDatabase {
 				
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
                 for (int i = 0; i < parts.length; i++) {
-					System.out.println(parts[i]);
 					parts[i] = parts[i].trim();
 				}
                 String businessName = parts[1];
