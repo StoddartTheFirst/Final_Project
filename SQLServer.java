@@ -1838,8 +1838,8 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "select councillors.cid, councillors.name, sum(gift.value) as totalValue" 
-								+ " from Councillors join Gifts on Councillors.CID = Gifts.Councillor join Gift on gifts.gid = gift.gid where councillors.cid = ? group by councillors.cid, councillors.name;";
+			String sqlMessage = "select councillors.cid, sum(gift.value) as totalValue" 
+								+ " from Councillors join Gifts on Councillors.CID = Gifts.Councillor join Gift on gifts.gid = gift.gid where councillors.cid = ? group by councillors.cid;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, councillor);
 			ResultSet resultSet = statement.executeQuery();
@@ -1861,7 +1861,7 @@ class MyDatabase {
 		try
 		{
 			String sqlMessage = "select councillors.cid, sum(BuysFrom.Amount) as total" 
-								+ "from Councillors join BuysFrom on Councillors.CID=BuysFrom.CID where Councillors.CID = ?  group by councillors.cid;";
+								+ " from Councillors join BuysFrom on Councillors.CID=BuysFrom.CID where Councillors.CID = ?  group by councillors.cid;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, councillor);
 			ResultSet resultSet = statement.executeQuery();
