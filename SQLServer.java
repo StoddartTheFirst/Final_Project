@@ -71,7 +71,7 @@ public class SQLServer{
 				if (parts[0].equals("help") || argCheck(arg)) {
 					printHelp(mode);	
 				}
-				else if(mode == 1)//Browse Mode. All "lookup" queries go here
+				else if(mode == 1)//Browse Mode. All "lookup" and "print" queries go here
 				{
 					if(parts[0].equals("2"))
 					{
@@ -84,6 +84,30 @@ public class SQLServer{
 					else if(parts[0].equals("w") && parts.length == 2)
 					{
 						db.searchWard(parts[1]);
+					}
+					else if(parts[0].equals("a") && parts.length == 2)
+					{
+						if(parts[1].equals("w"))
+						{
+							db.allWards();
+						}
+						else if(parts[1].equals("c"))
+						{
+							db.allCouncillors();
+						}
+						else if(parts[1].equals("n"))
+						{
+							db.allNeighbourhoods();
+						}
+						else if(parts[1].equals("t"))
+						{
+							db.allThirdParty();
+						}
+						else if(parts[1].equals("b"))
+						{
+							db.allBusinessOwners();
+						}
+						else { System.out.println("Type help for help"); }
 					}
 					else if(parts[0].equals("c") && parts.length == 3)
 					{
@@ -260,6 +284,12 @@ public class SQLServer{
 		if(mode == 1)//Browse Mode
 		{
 			System.out.println("Browse Mode Commands:");
+			System.out.println("a w:Print all Wards");
+			System.out.println("a c:Print all Councillors");
+			System.out.println("a n:Print all Neighbourhoods");
+			System.out.println("a t:Print all registered Third-Parties (WARNING: May be large!)");
+			System.out.println("a b:Print all registered business owners");
+			System.out.println("-");
 			System.out.println("w <name> :Lookup Ward data by <name>");
 			System.out.println("-");
 			System.out.println("c n <name> :Lookup Councillor data by <name>");
@@ -1354,6 +1384,7 @@ class MyDatabase {
 		}
 	}
 
+	/* This query is redundant (searchCouncillor)
 	public void yearsServec()
 	{
 		try
@@ -1372,6 +1403,7 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 
 	public void allNeighbourhoods()
 	{
@@ -1537,6 +1569,7 @@ class MyDatabase {
 	}
 		*/
 
+	/* This query could return too much data in the future
 	public void lobbies()
 	{
 		try
@@ -1556,7 +1589,9 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 
+	/* This query is redundant (allBusinessOwners)
 	public void owns()
 	{
 		try
@@ -1575,6 +1610,7 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 	
 	//Queries
 	/*1*****************/
@@ -1697,8 +1733,6 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
-
-	//2
 
 	public void expensesByCouncillor(String cid)
 	{
