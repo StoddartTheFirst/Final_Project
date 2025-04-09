@@ -1411,6 +1411,7 @@ class MyDatabase {
 		}
 	}
 
+	/* This is too much data at once!
 	public void allGifts()
 	{
 		try
@@ -1429,6 +1430,7 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 
 	public void allBusinessOwners()
 	{
@@ -1449,6 +1451,7 @@ class MyDatabase {
 		}
 	}
 
+	/* This query is redundant (searchCouncillor)
 	public void represents()
 	{
 		try
@@ -1467,7 +1470,9 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 
+	/* This query doesn't make sense.
 	public void participates()
 	{
 		try
@@ -1486,7 +1491,9 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 
+	/* This is too much data at once!
 	public void gifts()
 	{
 		try
@@ -1506,7 +1513,9 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+	*/
 
+	/* This is too much data at once!
 	public void buysFrom()
 	{
 		try
@@ -1526,6 +1535,7 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
+		*/
 
 	public void lobbies()
 	{
