@@ -1567,7 +1567,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "WITH CLobbies AS (SELECT * FROM Lobbies WHERE Date BETWEEN ? AND ?), CGifts AS (SELECT * FROM Gifts WHERE DateGifted BETWEEN ? AND ?) SELECT Councillors.CID, Councillors.name FROM Councillors WHERE NOT EXISTS (SELECT Councillors.CID, Councillors.name FROM Councillors JOIN CLobbies ON Councillors.CID=CLobbies.CID JOIN CGifts ON Councillors.CID=CGifts.CID);";
+			String sqlMessage = "WITH CLobbies AS (SELECT Lobbies.CID as LCID FROM Lobbies WHERE Lobbies.LobbyDate BETWEEN ? AND ?), CGifts AS (SELECT Gifts.Councillor as GC FROM Gifts WHERE DateGifted BETWEEN ? AND ?) SELECT Councillors.CID, Councillors.name FROM Councillors WHERE NOT EXISTS (SELECT Councillors.CID, Councillors.name FROM Councillors JOIN CLobbies ON Councillors.CID=CLobbies.LCID JOIN CGifts ON Councillors.CID=CGifts.GC);";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, date);
 			statement.setString(2, date2);
@@ -1575,7 +1575,7 @@ class MyDatabase {
 			statement.setString(4, date2);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|", "CID", "Councillor"));
-			System.out.println("---------------------------------------------------------------------------------------------------------------");
+			System.out.println("----------------------------------------------------------------------------------");
 			while(resultSet.next())
 			{
 				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
@@ -1592,7 +1592,7 @@ class MyDatabase {
 		try
 		{
 			String sqlMessage = "select councillors.cid, councillors.name, sum(gift.value) as totalValue" 
-								+ "from Councillors join Gifts on Councillors.CID = Gifts.Councillors join Gift on gifts.gid = gift.gid where councillors.name like %?% group by councillors.cid, councillors.name;";
+								+ " from Councillors join Gifts on Councillors.CID = Gifts.Councillor join Gift on gifts.gid = gift.gid where councillors.cid = ? group by councillors.cid, councillors.name;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, councillor);
 			ResultSet resultSet = statement.executeQuery();
