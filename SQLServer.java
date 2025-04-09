@@ -1988,14 +1988,14 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TOP 10 t.TID, t.Name AS ThirdPartyName,COUNT(DISTINCT g.GID) AS total_gifts, COUNT(DISTINCT l.Date) AS total_lobbies FROM ThirdParty t LEFT JOIN Gifts g ON t.TID = g.Source LEFT JOIN Lobbies l ON t.TID = l.Business GROUP BY t.TID, t.Name HAVING COUNT(g.GID) > 0 OR COUNT(l.Date) > 0 ORDER BY (COUNT(DISTINCT g.GID) + COUNT(DISTINCT l.Date)) DESC;";
+			String sqlMessage = "SELECT TOP 10 t.TID, t.Name AS ThirdPartyName, COUNT(DISTINCT g.GID) AS total_gifts, COUNT(DISTINCT l.LobbyDate) AS total_lobbies FROM ThirdParty t LEFT JOIN Gifts g ON t.TID = g.Source LEFT JOIN Lobbies l ON t.TID = l.Business GROUP BY t.TID, t.Name HAVING COUNT(g.GID) > 0 OR COUNT(l.LobbyDate) > 0 ORDER BY (COUNT(DISTINCT g.GID) + COUNT(DISTINCT l.LobbyDate)) DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", "GiftID", "CouncillorID", "Date Gifted"));
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "TID", "Third-Party Name", "Total Gifts", "Total Lobbies"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4)));
 			}
 		}
 		catch (SQLException e)
