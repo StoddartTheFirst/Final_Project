@@ -371,7 +371,6 @@ class MyDatabase {
 			connection = DriverManager.getConnection(connectionURL);
 			deleteTables();
 			createTables();
-			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}	
@@ -585,9 +584,9 @@ class MyDatabase {
 	}
 
 	public void fillTables(){
-		String councilCsv = "council_data.csv";
-		String electionCsv = "elections.csv";
-		String giftsCsv = "gifts.csv";
+		String councilCsv = "Council_Data.csv";
+		String electionCsv = "Elections.csv";
+		String giftsCsv = "Gifts.csv";
 		String expensesCsv = "Council_Member_Expenses.csv";
 		String lobbyistCsv = "Lobbyist_Registry.csv";
 
@@ -1324,35 +1323,32 @@ class MyDatabase {
 		}
 	}
 	
-	
-	
-
 	//Queries
 	/*1*****************/
 	public void searchWard(String ward) {
 		try {
-			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward WHERE Ward.WardE LIKE %?% OR Ward.WardF LIKE %?%;";
+			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward WHERE Ward.WardE LIKE ? OR Ward.WardF LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, ward);
-			statement.setString(2, ward);
+			statement.setString(1, "%"+ward+"%");
+			statement.setString(2, "%"+ward+"%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-10d\t|\t%-20s\t|\t%-20s\t|","WID", "WardE", "WardF"));
-			System.out.println("---------------------------------------------------------------------------------------------------------------");
+			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|","WID", "WardE", "WardF"));
+			System.out.println("---------------------------------------------------------------------------------------------");
 			while(resultSet.next()){
-				System.out.println(String.format("%-10d\t|\t%-20s\t|\t%-20s\t|", truncateString(resultSet.getString(1),30), truncateString(resultSet.getString(2), 10), truncateString(resultSet.getString(3), 10)));
+				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", truncateString(resultSet.getString(1),30), truncateString(resultSet.getString(2), 10), truncateString(resultSet.getString(3), 10)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace(System.out);
 		}
 	}
 
-	public void searchCouncillor(String n)
+	public void searchCouncillor(String name)
 	{
 		try
 		{
-			String sqlMessage = "SELECT CID, WID, present, name, phone, fax, websiteurl, YearsServed, Ward FROM Councillors NATURAL JOIN YearsServed WHERE name LIKE ?;";
+			String sqlMessage = "SELECT Councillors.CID, WID, Present, Name, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			statement.setString(1, "%" + n + "%");
+			statement.setString(1, "%" + name + "%");
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL", "YearsServed"));
 			System.out.println("---------------------------------------------------------------------------------------------------------------");
@@ -1370,7 +1366,7 @@ class MyDatabase {
 	{
 		try 
 		{
-			String sqlMessage = "SELECT CID, WID, Present, Name, Phone, Fax, WebsiteURL FROM Councillors NATURAL JOIN CouncilNeighbourhoods WHERE CouncilNeighbourhoods.name LIKE %?%;";
+			String sqlMessage = "SELECT CID, WID, Present, Name, Phone, Fax, WebsiteURL FROM Councillors NATURAL INNER JOIN CouncilNeighbourhoods WHERE CouncilNeighbourhoods.name LIKE %?%;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, nbhString);
 			ResultSet resultSet = statement.executeQuery();
