@@ -1386,7 +1386,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Councillors.* FROM Councillors NATURAL JOIN YearsServed WHERE YearsServed.Year=?;";
+			String sqlMessage = "SELECT Councillors.* FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE YearsServed.Year=?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, year);
 			ResultSet resultSet = statement.executeQuery();
