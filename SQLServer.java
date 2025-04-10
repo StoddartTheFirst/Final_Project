@@ -250,6 +250,7 @@ public class SQLServer{
 						if(line.contains("confirm")) {
 							System.out.println("Attempting to populate database...");
 							db.createTables();
+							db.fillTables();
 						}
 						else {
 							System.out.println("Populate canceled.");
@@ -401,6 +402,7 @@ class MyDatabase {
 			connection = DriverManager.getConnection(connectionURL);
 			deleteTables();
 			createTables();
+			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}	
@@ -1451,13 +1453,13 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT cid, area FROM CouncilNeighbourhoods;";
+			String sqlMessage = "SELECT DISTINCT area FROM CouncilNeighbourhoods;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-10s\t|\t%-20s\t|","CID", "Area"));
+			System.out.println(String.format("%-10s\t|", "Area Name"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-10d\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
+				System.out.println(String.format("%-10s\t", resultSet.getString(1)));
 			}
 		}
 		catch (SQLException e)
