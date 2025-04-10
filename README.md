@@ -27,7 +27,8 @@ The help menu will also show you which numbers correspond to which Modes:
 
 # Browse Mode
 
-Browse Mode hosts commands that perform basic lookup queries and preview of data:
+Browse Mode hosts commands that perform basic lookup queries that aid in advanced queries in Search Mode,
+ and provide some previews of data:
 
 a w: Prints all Wards in the database
 
