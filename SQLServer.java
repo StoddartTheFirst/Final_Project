@@ -1796,16 +1796,16 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "select councillors.cid, sum(gift.value) as totalValue" 
-								+ " from Councillors join Gifts on Councillors.CID = Gifts.Councillor join Gift on gifts.gid = gift.gid where councillors.cid = ? group by councillors.cid;";
+			String sqlMessage = "select gifts.Councillor, sum(gift.value) as totalValue" 
+								+ " from gifts join Gift on gifts.gid = gift.gid where gifts.Councillor = ? group by gifts.Councillor;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, councillor);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "Name", "TotalValue"));
+			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "TotalValue"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
 			}
 		}
 		catch (SQLException e)
