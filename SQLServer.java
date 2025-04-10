@@ -43,6 +43,7 @@ public class SQLServer{
 		String[] parts;
 		String arg = "";
 		int mode = 0;
+		int protectMode = 0;
 		while (line != null && !line.equals("q") && !line.equals("quit"))
 		{
 			parts = splitLine(line);
@@ -137,6 +138,11 @@ public class SQLServer{
 						}
 						else { System.out.println("Usage: b n <name> OR b own <ownerName>"); }
 					}
+
+					else 
+					{
+						System.out.println("Type help for help");
+					}
 				}
 				else if(mode == 2)//Search Mode. All "Show" and "Aggregate" queries go here
 				{
@@ -220,49 +226,67 @@ public class SQLServer{
 					{
 						db.bigGivers();
 					}
+
+					else 
+					{
+						System.out.println("Type help for help");
+					}
 				}
 				else if(mode == 3)//Maintenance Mode. Delete and restore queries go here
 				{
-					if(parts[0].equals("1"))
+					if(parts[0].equals("1") && protectMode == 0)
 					{
 						mode = 1;
 					}
-					else if(parts[0].equals("2"))
+					else if(parts[0].equals("2") && protectMode == 0)
 					{
 						mode = 2;
 					}
-					else if(parts[0].equals("deleteTables")) 
+					else if(parts[0].equals("deleteTables") && protectMode == 0) 
 					{
 						System.out.println("\nYou are about to delete all data. Type 'confirm' to procced");
 						line = console.nextLine();
 						if(line.contains("confirm")) {
-							System.out.println("Attempting to delete data...");
+							System.out.println("Deleting data...");
 							db.deleteTables();
+							protectMode = 1;
 						}
 						else {
 							System.out.println("Delete canceled.");
 						}
 					}
-					else if(parts[0].equals("populateTables")) 
+					else if(parts[0].equals("populateTables") && protectMode == 1) 
 					{
 						System.out.println("\nYou are about to populate the database. Type 'confirm' to procced");
 						line = console.nextLine();
 						if(line.contains("confirm")) {
-							System.out.println("Attempting to populate database...");
+							System.out.println("Populating database...");
 							db.createTables();
 							db.fillTables();
+							protectMode = 0;
 						}
 						else {
 							System.out.println("Populate canceled.");
 						}	
 					}
+					else if(protectMode == 1)
+					{
+						System.out.println("Please populate the database before continuing to use the program.");
+					}
+
+					else 
+					{
+						System.out.println("Type help for help");
+					}
 				}
 				
 				else 
 				{
-					System.out.println("Type help for help");
+					System.out.println("Illegal Mode Violation - Something has gone wrong.");
+					console.close();
 				}
 			}
+			
 			System.out.print("db > ");
 			line = console.nextLine();
 		}
@@ -272,13 +296,18 @@ public class SQLServer{
 	//Info Functions
 	private static void printWelcome()
 	{
+		System.out.println("");
 		System.out.println("Welcome to the Winnipeg Council Transparency Database!");
+		System.out.println("Here you can browse data on Council Members affairs such as gifts received.");
+		System.out.println("Please note that Winnipeg Council Members are not required to disclose lobby activities.");
+		System.out.println("-----------");
 		System.out.println("How to use:");
 		System.out.println("-----------");
 		System.out.println("Enter '1' for Browse Mode if you want to lookup data");
 		System.out.println("Enter '2' for Search Mode if you want to search for relationships in data");
 		System.out.println("Enter '3' for Maintenance Mode for clearing and re-populating the database");
 		System.out.println("Enter 'help' at any time for detailed help, or 'q' to quit");
+		System.out.println("-----------");
 	}
 	private static void printHelp(int mode) 
 	{
@@ -643,6 +672,8 @@ class MyDatabase {
 
 			// 7. Participates
 			populateParticipates(electionCsv);
+
+			System.out.println("Almost there...");
 
 			// 8. ThirdParty - Vendors from Expenses
 			Map<String, Integer> thirdPartyMap = new HashMap<String, Integer>();
@@ -1400,9 +1431,11 @@ class MyDatabase {
 			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
+			System.out.println(String.format("%-3s|%-40s|%-20s", "WID", "Name English", "Name French"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-10d\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-3s|%-40s|%-20s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace(System.out);
@@ -1416,10 +1449,12 @@ class MyDatabase {
 			String sqlMessage = "SELECT CID, WID, present, name, phone, fax, websiteurl from councillors;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
+			System.out.println(String.format("%-3s|%-3s|%-7s|%-20s|%-13s|%-13s|%-20s","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-3s|%-3s|%-7s|%-20s|%-13s|%-13s|%-20s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println("");
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)
@@ -1435,10 +1470,10 @@ class MyDatabase {
 			String sqlMessage = "SELECT DISTINCT area FROM CouncilNeighbourhoods;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-10s\t|", "Area Name"));
+			System.out.println(String.format("%-40s", "Area Name"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-10s\t", resultSet.getString(1)));
+				System.out.println(String.format("%-40s", resultSet.getString(1)));
 			}
 		}
 		catch (SQLException e)
@@ -1451,13 +1486,14 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty;";
+			String sqlMessage = "SELECT TID, Name, Address, Phone, Email FROM ThirdParty;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			System.out.println(String.format("%-3s|%-40s|%-15s|%-12s|%-15s","TID", "Name", "Address", "Phone", "Email"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-3s|%-40s|%-15s|%-12s|%-15s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)
@@ -1473,10 +1509,10 @@ class MyDatabase {
 			String sqlMessage = "select ownerid, name, tid from BusinessOwner;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|","OwnerID", "Name", "TID"));
+			System.out.println(String.format("%-7s|%-60s|%-3s","OwnerID", "Name", "TID"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-7s|%-60s|%-3s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
 			}
 		}
 		catch (SQLException e)
@@ -1494,10 +1530,10 @@ class MyDatabase {
 			statement.setString(1, "%"+ward+"%");
 			statement.setString(2, "%"+ward+"%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|","WID", "WardE", "WardF"));
+			System.out.println(String.format("%-4s|%-50s|%-20s","WID", "WardE", "WardF"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
+				System.out.println(String.format("%-4s|%-50s|%-20s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace(System.out);
@@ -1512,10 +1548,11 @@ class MyDatabase {
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%" + name + "%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL", "Year"));
+			System.out.println(String.format("%-3s|%-3s|%-7s|%-20s|%-12s|%-12s|%-35s|%-5s","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL", "Year"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
+				System.out.println(String.format("%-3s|%-3s|%-7s|%-20s|%-12s|%-12s|%-35s|%-5s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)
@@ -1528,14 +1565,14 @@ class MyDatabase {
 	{
 		try 
 		{
-			String sqlMessage = "SELECT Councillors.CID, Councillors.Name, WID, CouncilNeighbourhoods.Area, Phone, Fax, WebsiteURL FROM Councillors JOIN CouncilNeighbourhoods ON Councillors.CID=CouncilNeighbourhoods.CID WHERE CouncilNeighbourhoods.Area LIKE ?;";
+			String sqlMessage = "SELECT Councillors.CID, Councillors.Name, WID, CouncilNeighbourhoods.Area, Phone, Fax FROM Councillors JOIN CouncilNeighbourhoods ON Councillors.CID=CouncilNeighbourhoods.CID WHERE CouncilNeighbourhoods.Area LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%"+nbhString+"%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "Name", "WID", "Neighbourhood Name", "Phone", "Fax", "WebsiteURL"));
+			System.out.println(String.format("%-3s|%-20s|%-3s|%-30s|%-12s|%-12s","CID", "Name", "WID", "Neighbourhood Name", "Phone", "Fax"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-3s|%-20s|%-3s|%-30s|%-12s|%-12s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6)));
 			}
 		} 
 		catch (SQLException e)
@@ -1552,11 +1589,12 @@ class MyDatabase {
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, year);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
+			System.out.println(String.format("%-3s|%-3s|%-7s|%-20s|%-12s|%-12s","CID", "WID", "Present", "Name", "Phone", "Fax"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-10s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-3s|%-3s|%-7s|%-20s|%-12s|%-12s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)
@@ -1569,15 +1607,16 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TID, Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty WHERE ThirdParty.isBusiness='TRUE' AND ThirdParty.Name LIKE ?;";
+			String sqlMessage = "SELECT TID, Name, Address, Phone, Email FROM ThirdParty WHERE ThirdParty.isBusiness='TRUE' AND ThirdParty.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%"+name+"%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			System.out.println(String.format("%-3s|%-40s|%-15s|%-12s|%-15s","TID", "Name", "Address", "Phone", "Email"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-3s|%-40s|%-15s|%-12s|%-15s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)
@@ -1590,15 +1629,16 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT ThirdParty.TID, BusinessOwner.Name, Address, Phone, Email, isBusiness, isVendor FROM ThirdParty JOIN Owns ON ThirdParty.TID=Owns.Business JOIN BusinessOwner ON Owns.OwnerID=BusinessOwner.OwnerID WHERE BusinessOwner.Name LIKE ?;";
+			String sqlMessage = "SELECT ThirdParty.TID, BusinessOwner.Name, Address, Phone, Email FROM ThirdParty JOIN Owns ON ThirdParty.TID=Owns.Business JOIN BusinessOwner ON Owns.OwnerID=BusinessOwner.OwnerID WHERE BusinessOwner.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%"+owner+"%");
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			System.out.println(String.format("%-3s|%-50s|%-30s|%-12s|%-10s","TID", "Name", "Address", "Phone", "Email"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-3s|%-50s|%-30s|%-12s|%-10s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)
@@ -1620,11 +1660,12 @@ class MyDatabase {
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","PurchaseID", "Date", "Source", "Type", "Account", "Amount", "Description", "Department"));
+			System.out.println(String.format("%-3s|%-10s|%-6s|%-25s|%-35s|%-10s|%-50s","PID", "Date", "Source", "Type", "Account", "Amount", "Description"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
+				System.out.println(String.format("%-3s|%-10s|%-6s|%-25s|%-35s|%-10s|%-50s", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(SEPARATOR_LINE);
 			}
 		}
 		catch (SQLException e)

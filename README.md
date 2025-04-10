@@ -72,6 +72,7 @@ This Mode only hosts commands to delete and re-populate the database.
 Any attempt to switch to another mode while no data is present will fail.
 
 deleteTables: Deletes all data from the database
+
 populateTables: Re-populates all data into the database
 
 
