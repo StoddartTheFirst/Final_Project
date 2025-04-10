@@ -313,44 +313,44 @@ public class SQLServer{
 	{
 		if(mode == 1)//Browse Mode
 		{
-			System.out.println("Browse Mode Commands:");
-			System.out.println("a w:Print all Wards");
-			System.out.println("a c:Print all Councillors");
-			System.out.println("a n:Print all Neighbourhoods");
-			System.out.println("a t:Print all registered Third-Parties (WARNING: May be large!)");
-			System.out.println("a b:Print all registered business owners");
-			System.out.println("-");
-			System.out.println("w <name> :Lookup Ward data by <name>");
-			System.out.println("-");
-			System.out.println("c n <name> :Lookup Councillor data by <name>");
-			System.out.println("c h <neighbourhoodName>:Lookup Councillor data by <neighbourhoodName>");
-			System.out.println("c y <YYYY>:Lookup Councillor data by <YYYY> (year)");
-			System.out.println("-");
-			System.out.println("b n <name>:Lookup Business data by <name>");
-			System.out.println("b own <ownerName>:Lookup Business data by <ownerName>");
+			System.out.println("Browse Mode Commands:\n");
+			System.out.println("Print all Wards: \na w\n");
+			System.out.println("Print all Councillors\na c\n");
+			System.out.println("Print all Neighbourhoods\na n\n");
+			System.out.println("Print all registered Third-Parties (WARNING: May be large!)\na t\n");
+			System.out.println("Print all registered business owners\na b\n");
+			System.out.println("-\n");
+			System.out.println("Lookup Ward data by <name>:\nw <name>\n");
+			System.out.println("-\n");
+			System.out.println("Lookup Councillor data by <name>:\nc n <name>\n");
+			System.out.println("Lookup Councillor data by <neighbourhoodName>\nc h <neighbourhoodName>\n");
+			System.out.println("Lookup Councillor data by <YYYY> (year)\nc y <YYYY>\n");
+			System.out.println("-\n");
+			System.out.println("Lookup Business data by <name>\nb n <name>\n");
+			System.out.println("Lookup Business data by <ownerName>\nb own <ownerName>\n");
 			System.out.println("-----");
 			System.out.println("Enter 2 to enter Search Mode, 3 for Maintenance Mode, or q to quit");
 		}
 		else if(mode == 2)//Search Mode
 		{
-			System.out.println("Search Mode Commands:");
-			System.out.println("c e <CID>:Get Councillor expenses by <CID>");
-			System.out.println("c g <CID>:Get Councillor gifts received by <CID>");
-			System.out.println("c l <CID>:Get Councillor lobby activities by <CID>");
-			System.out.println("-");
-			System.out.println("r e <YYYYMMDD> <YYYYMMDD>:Show all expenses in a date range");
-			System.out.println("r g <YYYYMMDD> <YYYYMMDD>:Show all gifts in a date range");
-			System.out.println("-");
-			System.out.println("n <YYYYMMDD> <YYYYMMDD>:Show councillors that have not participated in any lobby activities or received any gifts in a date range");
-			System.out.println("-");
-			System.out.println("v e <CID>:Get expendature total by <CID>");
-			System.out.println("v g <CID>:Get total value of gifts received by <CID>");
-			System.out.println("-");
-			System.out.println("t e:Show Top 10 councillors that spend the most");
-			System.out.println("-");
-			System.out.println("s:Show Top 10 gifts that were given closest to an election");
-			System.out.println("g:Show Top 10 gifts with the largest gap between date recorded and date received");
-			System.out.println("l:Show Top 10 third-parties that have given gifts and/or preformed lobby activities");
+			System.out.println("Search Mode Commands:\n");
+			System.out.println("Get Councillor expenses by <CID>:\nc e <CID>\n");
+			System.out.println("Get Councillor gifts received by <CID>:\nc g <CID\n");
+			System.out.println("Get Councillor lobby activities by <CID>:\nc l <CID>\n");
+			System.out.println("-\n");
+			System.out.println("Show all expenses in a date range:\nr e <YYYYMMDD> <YYYYMMDD\n");
+			System.out.println("Show all gifts in a date range:\nr g <YYYYMMDD> <YYYYMMDD>\n"); 
+			System.out.println("-\n");
+			System.out.println("Show Councillors that have not participated in any lobby activities or received any gifts in a date range:\nn <YYYYMMDD> <YYYYMMDD>\n");
+			System.out.println("-\n");
+			System.out.println("Get expendature total by <CID>:\nv e <CID>\n");
+			System.out.println("Get total value of gifts received by <CID>:\nv g <CID>\n");
+			System.out.println("-\n");
+			System.out.println("Show Top 10 councillors that spend the most:\nt e \n");
+			System.out.println("-\n");
+			System.out.println("Show Top 10 gifts that were given closest to an election:\ns\n");
+			System.out.println("Show Top 10 gifts with the largest gap between date recorded and date received:\ng\n");
+			System.out.println("Show Top 10 third-parties that have given gifts and/or preformed lobby activities:\nl\n");
 			System.out.println("-----");
 			System.out.println("Enter 1 to enter Browse Mode, 3 for Maintenance Mode, or q to quit");
 		}
@@ -463,7 +463,7 @@ class MyDatabase {
 				" CID INT PRIMARY KEY IDENTITY(1,1), " +
 				" WID INT, " +
 				" Present BIT, " +
-				" Name VARCHAR(255), " +
+				" Name VARCHAR(50), " +
 				" Phone VARCHAR(50), " +
 				" Fax VARCHAR(50), " +
 				" WebsiteURL VARCHAR(255), " +
@@ -508,7 +508,7 @@ class MyDatabase {
 				" CREATE TABLE ThirdParty (" +
 				" TID INT PRIMARY KEY IDENTITY(1,1), " +
 				" Name VARCHAR(255), " +
-				" Address VARCHAR(500), " +
+				" Address VARCHAR(255), " +
 				" Phone VARCHAR(50), " +
 				" Email VARCHAR(255), " +
 				" isBusiness BIT, " +
@@ -562,13 +562,13 @@ class MyDatabase {
 				" GID INT, " +
 				" DateRecorded DATE, " +
 				" Councillor INT, " +
-				" RecipientSelf VARCHAR(10), " +
-				" RecipientDependent VARCHAR(10), " +
-				" RecipientStaff VARCHAR(10), " +
+				" RecipientSelf BIT, " +
+				" RecipientDependent BIT, " +
+				" RecipientStaff BIT, " +
 				" Source INT, " +
 				" DateGifted DATE, " +
-				" Reason VARCHAR(255), " +
-				" Intent VARCHAR(255), " +
+				" Reason VARCHAR(3000), " +
+				" Intent VARCHAR(1000), " +
 				" PRIMARY KEY (GID, Councillor), " +
 				" FOREIGN KEY (GID) REFERENCES Gift(GID), " +
 				" FOREIGN KEY (Councillor) REFERENCES Councillors(CID), " +
@@ -610,14 +610,13 @@ class MyDatabase {
 				" LID INT PRIMARY KEY IDENTITY(1,1),"+
 				" Owner INT,"+
 				" Business INT,"+
-				" ClientBusiness INT,"+
+				" ClientBusiness VARCHAR(1000),"+
 				" CID INT,"+
 				" LobbyDate DATE,"+
-				" Subject VARCHAR(255),"+
-				" IntendedOutcome VARCHAR(500),"+
+				" Subject VARCHAR(1000),"+
+				" IntendedOutcome VARCHAR(2000),"+
 				" FOREIGN KEY (Owner) REFERENCES BusinessOwner(OwnerID),"+
 				" FOREIGN KEY (Business) REFERENCES ThirdParty(TID),"+
-				" FOREIGN KEY (ClientBusiness) REFERENCES ThirdParty(TID),"+
 				" FOREIGN KEY (CID) REFERENCES Councillors(CID)"+
 				");"
 				);
@@ -652,6 +651,9 @@ class MyDatabase {
 
 		try{
 			connection.setAutoCommit(false);
+			//hashmaps of data to their primary keys
+			Map<String, Integer> thirdPartyMap = new HashMap<String, Integer>();
+			//should change the other ones to pass by reference 
 			// 1. Wards
 			Map<String, Integer> wardMap = populateWards(councilCsv);
 
@@ -676,19 +678,21 @@ class MyDatabase {
 			System.out.println("Almost there...");
 
 			// 8. ThirdParty - Vendors from Expenses
-			Map<String, Integer> thirdPartyMap = new HashMap<String, Integer>();
 			populateThirdPartyVendors(expensesCsv, thirdPartyMap);
 
 			// 9. ThirdParty - Businesses from Lobbyist Registry
 			populateThirdPartyBusinesses(lobbyistCsv, thirdPartyMap);
 
+			//third party who gives gifts
+			populateThirdPartyGift(giftsCsv, thirdPartyMap);
+
 			// 10. Business Owners
 			Map<String, Integer> ownerMap = populateBusinessOwners(lobbyistCsv, thirdPartyMap);
 			// 11. BuysFrom
 			populateBuysFrom(expensesCsv, councillorMap, thirdPartyMap);
-
 			// 12. Owns
 			populateOwns(lobbyistCsv, ownerMap, thirdPartyMap);
+
 			// 13. Gifts (Gift + Gifts tables)
 			populateGiftTable(giftsCsv);
 			populateGifts(giftsCsv, councillorMap, thirdPartyMap);
@@ -1013,7 +1017,8 @@ class MyDatabase {
 				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 	
 				String candidate = parts[3];
-				int votes = Integer.parseInt(parts[5]);				LocalDate parsDate = LocalDate.parse(parts[0], inputFormat);
+				int votes = Integer.parseInt(parts[5]);				
+				LocalDate parsDate = LocalDate.parse(parts[0], inputFormat);
 				String correctFormatDate = parsDate.format(outputFormat);
 				//only add unique pairs of councillor,date
 				String key = candidate + "|" + correctFormatDate;
@@ -1032,7 +1037,6 @@ class MyDatabase {
 	/*
 	 * We have two third party functions because thirdparty entities come from separate csv's
 	 */
-
 	public void populateThirdPartyVendors(String csvFile, Map<String, Integer> vendorMap) throws IOException, SQLException {
 
 		try (
@@ -1124,30 +1128,38 @@ class MyDatabase {
 	}
 
 
-		public void populateThirdPartyGift(String csvFile) throws IOException, SQLException {
-			try (
-				BufferedReader br = new BufferedReader(new FileReader(csvFile));
-				PreparedStatement insertGift = connection.prepareStatement(
-					"INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)")
-			) {
-				String line = br.readLine(); 
-				while ((line = br.readLine()) != null) {
-					String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-					for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
-		
-					String name = parts[6];
+	public void populateThirdPartyGift(String csvFile, Map<String, Integer> thirdPartyMap) throws IOException, SQLException {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(csvFile));
+			PreparedStatement insertGift = connection.prepareStatement(
+				"INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
+				Statement.RETURN_GENERATED_KEYS)
 
-					insertGift.setString(1, name);
-					insertGift.setNull(2, Types.VARCHAR);
-					insertGift.setNull(0, Types.VARCHAR);
-					insertGift.setNull(4, Types.VARCHAR);
-					insertGift.setBoolean(5, false);
-					insertGift.setBoolean(6, false);
-					insertGift.addBatch();
+		) {
+			String line = br.readLine(); 
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
+	
+				String name = parts[6];
+
+				insertGift.setString(1, name);
+				insertGift.setNull(2, Types.VARCHAR);
+				insertGift.setNull(3, Types.VARCHAR);
+				insertGift.setNull(4, Types.VARCHAR);
+				insertGift.setBoolean(5, false);
+				insertGift.setBoolean(6, false);
+				insertGift.executeUpdate();
+
+				ResultSet rs = insertGift.getGeneratedKeys();
+				if (rs.next()) {
+					int tid = rs.getInt(1);
+					if(name != null)
+						thirdPartyMap.put(name, tid);
 				}
-				insertGift.executeBatch();
 			}
 		}
+	}
 
 
 	//populate business owners 
@@ -1239,7 +1251,7 @@ class MyDatabase {
 		}
 	}
 
-	public void populateGiftTable(String csvFile) throws IOException, SQLException {
+	public void populateGiftTable( String csvFile) throws IOException, SQLException {
 		try (
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));
 			PreparedStatement insertGift = connection.prepareStatement(
@@ -1400,7 +1412,7 @@ class MyDatabase {
 	
 				Integer ownerID = ownerMap.get(ownerName);
 				Integer businessID = businessMap.get(businessName);
-				Integer clientID = clientBusinessName.isEmpty() ? null : businessMap.get(clientBusinessName);
+				//Integer clientID = clientBusinessName.isEmpty() ? null : businessMap.get(clientBusinessName);
 				Integer cid = councillorMap.get(personLobbied.toLowerCase());
 	
 				if (ownerID == null || businessID == null || cid == null || date.isEmpty()){
@@ -1410,8 +1422,8 @@ class MyDatabase {
 	
 				insertLobbies.setInt(1, ownerID);
 				insertLobbies.setInt(2, businessID);
-				if (clientID != null) insertLobbies.setInt(3, clientID);
-				else insertLobbies.setNull(3, Types.INTEGER);
+				if (clientBusinessName != null) insertLobbies.setString(3, clientBusinessName);
+				else insertLobbies.setNull(3, Types.VARCHAR);
 	
 				insertLobbies.setInt(4, cid);
 				insertLobbies.setString(5, date);
