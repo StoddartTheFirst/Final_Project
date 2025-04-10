@@ -250,6 +250,7 @@ public class SQLServer{
 						if(line.contains("confirm")) {
 							System.out.println("Attempting to populate database...");
 							db.createTables();
+							db.fillTables();
 						}
 						else {
 							System.out.println("Populate canceled.");
@@ -401,6 +402,7 @@ class MyDatabase {
 			connection = DriverManager.getConnection(connectionURL);
 			deleteTables();
 			createTables();
+			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}	
@@ -583,7 +585,7 @@ class MyDatabase {
 				" CID INT,"+
 				" LobbyDate DATE,"+
 				" Subject VARCHAR(255),"+
-				" IntendedOutcome VARCHAR(255),"+
+				" IntendedOutcome VARCHAR(500),"+
 				" FOREIGN KEY (Owner) REFERENCES BusinessOwner(OwnerID),"+
 				" FOREIGN KEY (Business) REFERENCES ThirdParty(TID),"+
 				" FOREIGN KEY (ClientBusiness) REFERENCES ThirdParty(TID),"+
@@ -593,7 +595,6 @@ class MyDatabase {
 			
 			// Commit the transaction if everything is successful.
 			connection.commit();
-			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			try {
@@ -807,7 +808,8 @@ class MyDatabase {
 		
 				ResultSet rs = insertCouncillor.getGeneratedKeys();
 				if (rs.next()) {
-					councillorMap.put(name, rs.getInt(1));
+					//System.out.println(name + " " + rs.getInt(1));
+					councillorMap.put(name.toLowerCase(), rs.getInt(1));
 				}
 			}
 		}//try
@@ -831,7 +833,7 @@ class MyDatabase {
 				String councillorName = parts[4];
 				String wardName = parts[0];
 
-				Integer cid = councillorMap.get(councillorName);
+				Integer cid = councillorMap.get(councillorName.toLowerCase());
 				Integer wid = wardMap.get(wardName);
 				String key = Integer.toString(cid) + "|" + Integer.toString(wid);
 
@@ -870,15 +872,23 @@ class MyDatabase {
 				String name = parts[4];
 
 				//we have to check if neighbourhoods exist because the mayors have none 
-				String neighbourhoods = parts.length > 10 ? parts[10].replaceAll("^\"(.*)\"$", "$1") : "";
-				Integer cid = councillorMap.get(name);
+				String neighbourhoods = parts.length > 10 ? parts[10].replaceAll("^\"|\"$" , "").trim() : "";
+				Integer cid = councillorMap.get(name.toLowerCase());
 			
 
 				//some lines dont have neighbourhoods 
 				//probably should throw an exception here if there's no matching cid
-				if (cid == null || neighbourhoods.isEmpty()) continue;
+				if (cid == null) {
+					System.out.println("Missing CID for: '" + name + "'");
+				}
+				if (cid == null || neighbourhoods.isEmpty()){
+					//System.out.println("neighbourhood empty for cid: " + cid);
+					continue;
+				}
+				else{
 		
 				for (String area : neighbourhoods.split(",")) {
+					//System.out.println(Integer.toString(cid) + " " +area);
 					area = area.trim();
 					String key = cid + "|" + area;
 					if (!area.isEmpty() && !seenKeys.contains(key)) {
@@ -889,6 +899,7 @@ class MyDatabase {
 					seenKeys.add(key);
 				}
 				insertNeighbourhood.executeBatch();
+			}
 			}
 		}//try 
 	}
@@ -911,12 +922,12 @@ class MyDatabase {
 				String candidate = parts[3];
 				String position = parts[4];
 				//int votes = Integer.parseInt(parts[5]);
-	
-				Integer cid = councillorMap.get(candidate);
+				Integer cid = councillorMap.get(candidate.toLowerCase());
 				if (cid == null) {
 					continue; //skip any councillor thats not in our table
 				}
 	
+				//System.out.println(parts[3]);
 				insertElection.setString(1, correctFormatDate);
 				insertElection.setInt(2, cid);
 				insertElection.setString(3, type);
@@ -942,7 +953,7 @@ class MyDatabase {
 	
 				String candidate = parts[4];
 				String year = parts[3];
-				Integer cid = councillorMap.get(candidate);
+				Integer cid = councillorMap.get(candidate.toLowerCase());
 				if (cid == null) {
 
 				}
@@ -1033,7 +1044,7 @@ class MyDatabase {
         try (
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));
             PreparedStatement insertThirdParty = connection.prepareStatement(
-                    "INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS
             );
 		){
@@ -1074,17 +1085,44 @@ class MyDatabase {
                 if (rs.next()) {
                     int tid = rs.getInt(1);
 					if(clientBusiness != null)
-                    	thirdPartyMap.put(clientBusiness, tid);
+                    	thirdPartyMap.put(businessName, tid);
                 }
 				line = br.readLine();
             }
         }//try
+	}
+
+
+		public void populateThirdPartyGift(String csvFile) throws IOException, SQLException {
+			try (
+				BufferedReader br = new BufferedReader(new FileReader(csvFile));
+				PreparedStatement insertGift = connection.prepareStatement(
+					"INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)")
+			) {
+				String line = br.readLine(); 
+				while ((line = br.readLine()) != null) {
+					String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+					for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 		
-    }
+					String name = parts[6];
+
+					insertGift.setString(1, name);
+					insertGift.setNull(2, Types.VARCHAR);
+					insertGift.setNull(0, Types.VARCHAR);
+					insertGift.setNull(4, Types.VARCHAR);
+					insertGift.setBoolean(5, false);
+					insertGift.setBoolean(6, false);
+					insertGift.addBatch();
+				}
+				insertGift.executeBatch();
+			}
+		}
+
 
 	//populate business owners 
     public Map<String, Integer> populateBusinessOwners(String csvFile, Map<String, Integer> thirdPartyMap) throws IOException, SQLException {
 		Map<String, Integer> ownerMap = new HashMap<>();
+		Set<String> candidatekeys = new HashSet<>();
         try (
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));
             PreparedStatement insertOwner = connection.prepareStatement(
@@ -1096,30 +1134,34 @@ class MyDatabase {
 			line = br.readLine();
 			while(line != null){
 				while (line != null && line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length < 15) {
-					System.out.println(line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length);
+					//System.out.println(line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length);
 					String next = br.readLine();
 					if(next == null) break;
 					line += " " +next;
 				}
-				line = line.replaceAll("\n", " ");
+				//line = line.replaceAll("\n", " ");
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
                 for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 
-                String clientBusiness = parts[5];
-                String clientOwner = parts[6];
-
-                if (clientBusiness.isEmpty() || clientOwner.isEmpty()) {
+                String name = parts[0];
+				String businessName = parts[1];
+				//System.out.println(name);
+                //String clientOwner = parts[6];
+				Integer tid = thirdPartyMap.get(businessName);
+				//System.out.println(tid);
+				String key = name + "|" + tid;
+                if (name.isEmpty() || tid == null || candidatekeys.contains(key)) {
 					line = br.readLine();
 					continue;
 				}
-                Integer tid = thirdPartyMap.get(clientBusiness);
+				candidatekeys.add(name + "|" + tid);
              
-                insertOwner.setString(1, clientOwner);
+                insertOwner.setString(1, name);
                 insertOwner.setInt(2, tid);
                 insertOwner.executeUpdate();
 
 				ResultSet rs = insertOwner.getGeneratedKeys();
-				if(rs.next()) ownerMap.put(clientOwner, rs.getInt(1));
+				if(rs.next()) ownerMap.put(name, rs.getInt(1));
 				line = br.readLine();
             }
 		}//try
@@ -1144,7 +1186,7 @@ class MyDatabase {
 				String councillorName = parts[1];
 				String vendor = parts[3];
 	
-				Integer cid = councillorMap.get(councillorName);
+				Integer cid = councillorMap.get(councillorName.toLowerCase());
 				Integer tid = vendorMap.get(vendor);
 	
 				//need to throw exception here 
@@ -1221,7 +1263,7 @@ class MyDatabase {
 				String reason = parts[9];
 				String intent = parts[10];
 
-				Integer cid = councillorMap.get(councillorName);
+				Integer cid = councillorMap.get(councillorName.toLowerCase());
 				Integer tid = thirdPartyMap.get(sourceName);
 
 				//throw an exception here
@@ -1267,15 +1309,17 @@ class MyDatabase {
 				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 
+				/* 
 				String ownerName = parts[6]; // Client Business Owner
 				String clientBusiness = parts[5]; // Client Business Name
 				if (ownerName.isEmpty() || clientBusiness.isEmpty()) {
 					line = br.readLine();
 					continue;
 				}
+				*/
 
-				Integer ownerID = ownerMap.get(ownerName);
-				Integer businessID = thirdPartyMap.get(clientBusiness);
+				Integer ownerID = ownerMap.get(parts[0]);
+				Integer businessID = thirdPartyMap.get(parts[1]);
 				if (ownerID == null || businessID == null) {
 					line = br.readLine();
 					continue;
@@ -1326,7 +1370,7 @@ class MyDatabase {
 				Integer ownerID = ownerMap.get(ownerName);
 				Integer businessID = businessMap.get(businessName);
 				Integer clientID = clientBusinessName.isEmpty() ? null : businessMap.get(clientBusinessName);
-				Integer cid = councillorMap.get(personLobbied);
+				Integer cid = councillorMap.get(personLobbied.toLowerCase());
 	
 				if (ownerID == null || businessID == null || cid == null || date.isEmpty()){
 					line = br.readLine();
@@ -1389,7 +1433,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT cid, area FROM CouncilNeighbourhoods;";
+			String sqlMessage = "SELECT DISTINCT area FROM CouncilNeighbourhoods;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-5s |%-40s |","CID", "Area"));
@@ -1423,27 +1467,6 @@ class MyDatabase {
 		}
 	}
 
-	/* This is too much data at once!
-	public void allGifts()
-	{
-		try
-		{
-			String sqlMessage = "SELECT GID, Description, value FROM Gift;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|", "GID", "Description", "Value"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
 	public void allBusinessOwners()
 	{
 		try
@@ -1462,135 +1485,6 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
-
-	/* This query is redundant (searchCouncillor)
-	public void represents()
-	{
-		try
-		{
-			String sqlMessage = "select cid, wid from Represents;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "WID"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This query doesn't make sense.
-	public void participates()
-	{
-		try
-		{
-			String sqlMessage = "select councillor, election from Participates;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","Councillor", "Election"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This is too much data at once!
-	public void gifts()
-	{
-		try
-		{
-			String sqlMessage = "select GID, DateRecorded, Councillor, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent"
-					+ "from Gifts;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","GID", "DateRecorded", "Councillor", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9), resultSet.getString(10)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-	*/
-
-	/* This is too much data at once!
-	public void buysFrom()
-	{
-		try
-		{
-			String sqlMessage = "select PurchaseID, CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department"
-					+ "from BuysFrom;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "PurchaseID", "CID", "Date", "Vendor", "ExpenseType", "Description", "Account", "Amount", "Department"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This query could return too much data in the future
-	public void lobbies()
-	{
-		try
-		{
-			String sqlMessage = "select LID, Owner, Business, ClientBusiness, CID, Date, Subject, IntendedOutcome"
-					+ "from Lobbies;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "LID", "Owner", "Business", "ClientBusiness", "CID", "Date", "Subject", "IntendedOutcome"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This query is redundant (allBusinessOwners)
-	public void owns()
-	{
-		try
-		{
-			String sqlMessage = "select ownerid, business from Owns;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","OwnerID", "Business"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
 	
 	//Queries
 	/*1*****************/
@@ -1906,8 +1800,8 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "select Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
-								+ "from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by CID, Councillors.Name order by total DESC TOP 10;";
+			String sqlMessage = "select TOP 10 Councillors.CID, Councillors.name, sum(BuysFrom.Amount) as total" 
+								+ " from BuysFrom join Councillors on BuysFrom.CID=Councillors.CID group by Councillors.CID, Councillors.Name order by total DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			//statement.setString(1, gifter);
 			ResultSet resultSet = statement.executeQuery();
@@ -1928,7 +1822,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC TOP 10;";
+			String sqlMessage = "SELECT TOP 10 Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID Gifts.Councillor, Gifts.DateGifted ORDER BY diff ASC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-5s |%-5s |%-12s |%-12s |", "GiftID", "CouncillorID", "Date Gifted", "Difference"));
@@ -1948,7 +1842,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Gifts.DateRecorded)) AS diff FROM Gifts GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC TOP 10;";
+			String sqlMessage = "SELECT TOP 10 Gifts.GID, Gifts.Councillor, Gifts.DateGifted, Gifts.DateRecorded, DATEDIFF(DAY, Gifts.DateGifted, Gifts.DateRecorded) AS diff FROM Gifts GROUP BY Gifts.GID, Gifts.Councillor, Gifts.DateGifted, Gifts.DateRecorded ORDER BY diff DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-5s |%-5s |%-12s |%-12s |", "GiftID", "CouncillorID", "Date Gifted", "Difference"));
@@ -1968,7 +1862,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT t.TID, t.Name AS ThirdPartyName,COUNT(DISTINCT g.GID) AS total_gifts, COUNT(DISTINCT l.Date) AS total_lobbies FROM ThirdParty t LEFT JOIN Gifts g ON t.TID = g.Source LEFT JOIN Lobbies l ON t.TID = l.Business GROUP BY t.TID, t.Name HAVING COUNT(g.GID) > 0 OR COUNT(l.Date) > 0 ORDER BY (COUNT(DISTINCT g.GID) + COUNT(DISTINCT l.Date)) DESC TOP 10;";
+			String sqlMessage = "SELECT TOP 10 t.TID, t.Name AS ThirdPartyName, COUNT(DISTINCT g.GID) AS total_gifts, COUNT(DISTINCT l.LobbyDate) AS total_lobbies FROM ThirdParty t LEFT JOIN Gifts g ON t.TID = g.Source LEFT JOIN Lobbies l ON t.TID = l.Business GROUP BY t.TID, t.Name HAVING COUNT(g.GID) > 0 OR COUNT(l.LobbyDate) > 0 ORDER BY (COUNT(DISTINCT g.GID) + COUNT(DISTINCT l.LobbyDate)) DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-5s |%-40s |%-15 |%-15 |", "TID", "Third Party Name", "Total Gifts", "Total Lobbies"));
