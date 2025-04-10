@@ -808,7 +808,7 @@ class MyDatabase {
 		
 				ResultSet rs = insertCouncillor.getGeneratedKeys();
 				if (rs.next()) {
-					System.out.println(name + " " + rs.getInt(1));
+					//System.out.println(name + " " + rs.getInt(1));
 					councillorMap.put(name.toLowerCase(), rs.getInt(1));
 				}
 			}
@@ -882,13 +882,13 @@ class MyDatabase {
 					System.out.println("Missing CID for: '" + name + "'");
 				}
 				if (cid == null || neighbourhoods.isEmpty()){
-					System.out.println("neighbourhood empty for cid: " + cid);
+					//System.out.println("neighbourhood empty for cid: " + cid);
 					continue;
 				}
 				else{
 		
 				for (String area : neighbourhoods.split(",")) {
-					System.out.println(Integer.toString(cid) + " " +area);
+					//System.out.println(Integer.toString(cid) + " " +area);
 					area = area.trim();
 					String key = cid + "|" + area;
 					if (!area.isEmpty() && !seenKeys.contains(key)) {
@@ -1145,10 +1145,10 @@ class MyDatabase {
 
                 String name = parts[0];
 				String businessName = parts[1];
-				System.out.println(name);
+				//System.out.println(name);
                 //String clientOwner = parts[6];
 				Integer tid = thirdPartyMap.get(businessName);
-				System.out.println(tid);
+				//System.out.println(tid);
 				String key = name + "|" + tid;
                 if (name.isEmpty() || tid == null || candidatekeys.contains(key)) {
 					line = br.readLine();
@@ -1428,27 +1428,6 @@ class MyDatabase {
 		}
 	}
 
-	/* This query is redundant (searchCouncillor)
-	public void yearsServec()
-	{
-		try
-		{
-			String sqlMessage = "select cid, year from YearServed;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "Year"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
 	public void allNeighbourhoods()
 	{
 		try
@@ -1487,27 +1466,6 @@ class MyDatabase {
 		}
 	}
 
-	/* This is too much data at once!
-	public void allGifts()
-	{
-		try
-		{
-			String sqlMessage = "SELECT GID, Description, value FROM Gift;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|", "GID", "Description", "Value"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
 	public void allBusinessOwners()
 	{
 		try
@@ -1526,135 +1484,6 @@ class MyDatabase {
 			e.printStackTrace(System.out);
 		}
 	}
-
-	/* This query is redundant (searchCouncillor)
-	public void represents()
-	{
-		try
-		{
-			String sqlMessage = "select cid, wid from Represents;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","CID", "WID"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This query doesn't make sense.
-	public void participates()
-	{
-		try
-		{
-			String sqlMessage = "select councillor, election from Participates;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","Councillor", "Election"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This is too much data at once!
-	public void gifts()
-	{
-		try
-		{
-			String sqlMessage = "select GID, DateRecorded, Councillor, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent"
-					+ "from Gifts;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","GID", "DateRecorded", "Councillor", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9), resultSet.getString(10)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-	*/
-
-	/* This is too much data at once!
-	public void buysFrom()
-	{
-		try
-		{
-			String sqlMessage = "select PurchaseID, CID, Date, Vendor, ExpenseType, Description, Account, Amount, Department"
-					+ "from BuysFrom;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "PurchaseID", "CID", "Date", "Vendor", "ExpenseType", "Description", "Account", "Amount", "Department"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8), resultSet.getString(9)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This query could return too much data in the future
-	public void lobbies()
-	{
-		try
-		{
-			String sqlMessage = "select LID, Owner, Business, ClientBusiness, CID, Date, Subject, IntendedOutcome"
-					+ "from Lobbies;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", "LID", "Owner", "Business", "ClientBusiness", "CID", "Date", "Subject", "IntendedOutcome"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
-
-	/* This query is redundant (allBusinessOwners)
-	public void owns()
-	{
-		try
-		{
-			String sqlMessage = "select ownerid, business from Owns;";
-			PreparedStatement statement = connection.prepareStatement(sqlMessage);
-			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|","OwnerID", "Business"));
-			System.out.println(SEPARATOR_LINE);
-			while(resultSet.next()){
-				System.out.println(String.format("%-20s\t|\t%-20s\t|", resultSet.getString(1), resultSet.getString(2)));
-			}
-		}
-		catch (SQLException e)
-		{
-			e.printStackTrace(System.out);
-		}
-	}
-		*/
 	
 	//Queries
 	/*1*****************/
@@ -1992,7 +1821,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TOP 10 Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID, Gifts.Councillor ORDER BY diff ASC;";
+			String sqlMessage = "SELECT TOP 10 Gifts.GID, Gifts.Councillor, Gifts.DateGifted, min(abs(Gifts.DateGifted - Election.Date)) AS diff FROM Gift JOIN Gifts ON Gift.GID=Gifts.GID JOIN Election ON Gifts.Councillor = Election.CID GROUP BY Gifts.GID Gifts.Councillor, Gifts.DateGifted ORDER BY diff ASC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
 			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|", "GiftID", "CouncillorID", "Date Gifted"));
