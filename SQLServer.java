@@ -583,7 +583,7 @@ class MyDatabase {
 				" CID INT,"+
 				" LobbyDate DATE,"+
 				" Subject VARCHAR(255),"+
-				" IntendedOutcome VARCHAR(255),"+
+				" IntendedOutcome VARCHAR(500),"+
 				" FOREIGN KEY (Owner) REFERENCES BusinessOwner(OwnerID),"+
 				" FOREIGN KEY (Business) REFERENCES ThirdParty(TID),"+
 				" FOREIGN KEY (ClientBusiness) REFERENCES ThirdParty(TID),"+
@@ -593,7 +593,6 @@ class MyDatabase {
 			
 			// Commit the transaction if everything is successful.
 			connection.commit();
-			fillTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			try {
@@ -807,7 +806,8 @@ class MyDatabase {
 		
 				ResultSet rs = insertCouncillor.getGeneratedKeys();
 				if (rs.next()) {
-					councillorMap.put(name, rs.getInt(1));
+					System.out.println(name + " " + rs.getInt(1));
+					councillorMap.put(name.toLowerCase(), rs.getInt(1));
 				}
 			}
 		}//try
@@ -831,7 +831,7 @@ class MyDatabase {
 				String councillorName = parts[4];
 				String wardName = parts[0];
 
-				Integer cid = councillorMap.get(councillorName);
+				Integer cid = councillorMap.get(councillorName.toLowerCase());
 				Integer wid = wardMap.get(wardName);
 				String key = Integer.toString(cid) + "|" + Integer.toString(wid);
 
@@ -870,15 +870,23 @@ class MyDatabase {
 				String name = parts[4];
 
 				//we have to check if neighbourhoods exist because the mayors have none 
-				String neighbourhoods = parts.length > 10 ? parts[10].replaceAll("^\"(.*)\"$", "$1") : "";
-				Integer cid = councillorMap.get(name);
+				String neighbourhoods = parts.length > 10 ? parts[10].replaceAll("^\"|\"$" , "").trim() : "";
+				Integer cid = councillorMap.get(name.toLowerCase());
 			
 
 				//some lines dont have neighbourhoods 
 				//probably should throw an exception here if there's no matching cid
-				if (cid == null || neighbourhoods.isEmpty()) continue;
+				if (cid == null) {
+					System.out.println("Missing CID for: '" + name + "'");
+				}
+				if (cid == null || neighbourhoods.isEmpty()){
+					System.out.println("neighbourhood empty for cid: " + cid);
+					continue;
+				}
+				else{
 		
 				for (String area : neighbourhoods.split(",")) {
+					System.out.println(Integer.toString(cid) + " " +area);
 					area = area.trim();
 					String key = cid + "|" + area;
 					if (!area.isEmpty() && !seenKeys.contains(key)) {
@@ -889,6 +897,7 @@ class MyDatabase {
 					seenKeys.add(key);
 				}
 				insertNeighbourhood.executeBatch();
+			}
 			}
 		}//try 
 	}
@@ -911,12 +920,12 @@ class MyDatabase {
 				String candidate = parts[3];
 				String position = parts[4];
 				//int votes = Integer.parseInt(parts[5]);
-	
-				Integer cid = councillorMap.get(candidate);
+				Integer cid = councillorMap.get(candidate.toLowerCase());
 				if (cid == null) {
 					continue; //skip any councillor thats not in our table
 				}
 	
+				//System.out.println(parts[3]);
 				insertElection.setString(1, correctFormatDate);
 				insertElection.setInt(2, cid);
 				insertElection.setString(3, type);
@@ -942,7 +951,7 @@ class MyDatabase {
 	
 				String candidate = parts[4];
 				String year = parts[3];
-				Integer cid = councillorMap.get(candidate);
+				Integer cid = councillorMap.get(candidate.toLowerCase());
 				if (cid == null) {
 
 				}
@@ -1033,7 +1042,7 @@ class MyDatabase {
         try (
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));
             PreparedStatement insertThirdParty = connection.prepareStatement(
-                    "INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS
             );
 		){
@@ -1074,17 +1083,44 @@ class MyDatabase {
                 if (rs.next()) {
                     int tid = rs.getInt(1);
 					if(clientBusiness != null)
-                    	thirdPartyMap.put(clientBusiness, tid);
+                    	thirdPartyMap.put(businessName, tid);
                 }
 				line = br.readLine();
             }
         }//try
+	}
+
+
+		public void populateThirdPartyGift(String csvFile) throws IOException, SQLException {
+			try (
+				BufferedReader br = new BufferedReader(new FileReader(csvFile));
+				PreparedStatement insertGift = connection.prepareStatement(
+					"INSERT INTO ThirdParty (Name, Address, Phone, Email, isBusiness, isVendor) VALUES (?, ?, ?, ?, ?, ?)")
+			) {
+				String line = br.readLine(); 
+				while ((line = br.readLine()) != null) {
+					String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+					for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 		
-    }
+					String name = parts[6];
+
+					insertGift.setString(1, name);
+					insertGift.setNull(2, Types.VARCHAR);
+					insertGift.setNull(0, Types.VARCHAR);
+					insertGift.setNull(4, Types.VARCHAR);
+					insertGift.setBoolean(5, false);
+					insertGift.setBoolean(6, false);
+					insertGift.addBatch();
+				}
+				insertGift.executeBatch();
+			}
+		}
+
 
 	//populate business owners 
     public Map<String, Integer> populateBusinessOwners(String csvFile, Map<String, Integer> thirdPartyMap) throws IOException, SQLException {
 		Map<String, Integer> ownerMap = new HashMap<>();
+		Set<String> candidatekeys = new HashSet<>();
         try (
 			BufferedReader br = new BufferedReader(new FileReader(csvFile));
             PreparedStatement insertOwner = connection.prepareStatement(
@@ -1096,30 +1132,34 @@ class MyDatabase {
 			line = br.readLine();
 			while(line != null){
 				while (line != null && line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length < 15) {
-					System.out.println(line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length);
+					//System.out.println(line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).length);
 					String next = br.readLine();
 					if(next == null) break;
 					line += " " +next;
 				}
-				line = line.replaceAll("\n", " ");
+				//line = line.replaceAll("\n", " ");
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
                 for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 
-                String clientBusiness = parts[5];
-                String clientOwner = parts[6];
-
-                if (clientBusiness.isEmpty() || clientOwner.isEmpty()) {
+                String name = parts[0];
+				String businessName = parts[1];
+				System.out.println(name);
+                //String clientOwner = parts[6];
+				Integer tid = thirdPartyMap.get(businessName);
+				System.out.println(tid);
+				String key = name + "|" + tid;
+                if (name.isEmpty() || tid == null || candidatekeys.contains(key)) {
 					line = br.readLine();
 					continue;
 				}
-                Integer tid = thirdPartyMap.get(clientBusiness);
+				candidatekeys.add(name + "|" + tid);
              
-                insertOwner.setString(1, clientOwner);
+                insertOwner.setString(1, name);
                 insertOwner.setInt(2, tid);
                 insertOwner.executeUpdate();
 
 				ResultSet rs = insertOwner.getGeneratedKeys();
-				if(rs.next()) ownerMap.put(clientOwner, rs.getInt(1));
+				if(rs.next()) ownerMap.put(name, rs.getInt(1));
 				line = br.readLine();
             }
 		}//try
@@ -1144,7 +1184,7 @@ class MyDatabase {
 				String councillorName = parts[1];
 				String vendor = parts[3];
 	
-				Integer cid = councillorMap.get(councillorName);
+				Integer cid = councillorMap.get(councillorName.toLowerCase());
 				Integer tid = vendorMap.get(vendor);
 	
 				//need to throw exception here 
@@ -1221,7 +1261,7 @@ class MyDatabase {
 				String reason = parts[9];
 				String intent = parts[10];
 
-				Integer cid = councillorMap.get(councillorName);
+				Integer cid = councillorMap.get(councillorName.toLowerCase());
 				Integer tid = thirdPartyMap.get(sourceName);
 
 				//throw an exception here
@@ -1267,15 +1307,17 @@ class MyDatabase {
 				String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 				for (int i = 0; i < parts.length; i++) parts[i] = parts[i].trim();
 
+				/* 
 				String ownerName = parts[6]; // Client Business Owner
 				String clientBusiness = parts[5]; // Client Business Name
 				if (ownerName.isEmpty() || clientBusiness.isEmpty()) {
 					line = br.readLine();
 					continue;
 				}
+				*/
 
-				Integer ownerID = ownerMap.get(ownerName);
-				Integer businessID = thirdPartyMap.get(clientBusiness);
+				Integer ownerID = ownerMap.get(parts[0]);
+				Integer businessID = thirdPartyMap.get(parts[1]);
 				if (ownerID == null || businessID == null) {
 					line = br.readLine();
 					continue;
@@ -1326,7 +1368,7 @@ class MyDatabase {
 				Integer ownerID = ownerMap.get(ownerName);
 				Integer businessID = businessMap.get(businessName);
 				Integer clientID = clientBusinessName.isEmpty() ? null : businessMap.get(clientBusinessName);
-				Integer cid = councillorMap.get(personLobbied);
+				Integer cid = councillorMap.get(personLobbied.toLowerCase());
 	
 				if (ownerID == null || businessID == null || cid == null || date.isEmpty()){
 					line = br.readLine();
