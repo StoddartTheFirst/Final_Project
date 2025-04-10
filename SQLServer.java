@@ -1678,13 +1678,13 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gift.GID, DateRecorded, Councillors.Name, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent, Gift.Description, Gift.Value"
+			String sqlMessage = "SELECT Gift.GID, DateRecorded, Councillors.CID, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent, Gift.Description, Gift.Value"
 					+ " FROM Councillors JOIN Gifts ON Councillors.CID=Gifts.Councillor JOIN Gift ON Gifts.GID=Gift.GID JOIN ThirdParty ON Gifts.Source=ThirdParty.TID"
 					+ " WHERE Councillors.CID=? ORDER BY Gifts.DateGifted DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s","GID", "DateRecorded", "Councillor", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent", "Description", "Value"));
+			System.out.println(String.format("%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s","GID", "DateRecorded", "CID", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent", "Description", "Value"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
