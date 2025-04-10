@@ -1684,7 +1684,7 @@ class MyDatabase {
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
-			System.out.println(String.format("%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|t|\t%-20s\t|\t%-20s\t|\t%-20s\t|\t%-20s\t|","GID", "DateRecorded", "Councillor", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent", "Description", "Value"));
+			System.out.println(String.format("%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s|%-20s","GID", "DateRecorded", "Councillor", "RecipientSelf", "RecipientDependent", "RecipientStaff", "Source", "DateGifted", "Reason", "Intent", "Description", "Value"));
 			System.out.println(SEPARATOR_LINE);
 			while(resultSet.next())
 			{
