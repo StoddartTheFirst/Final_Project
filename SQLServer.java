@@ -1431,7 +1431,7 @@ class MyDatabase {
 			String sqlMessage = "SELECT WID, WardE, WardF FROM Ward;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-40s |%-40s |", "WID", "WardE", "WardF"));
+			printHeader(String.format("%-5s |%-40s |%-40s |", "WID", "Ward English", "Ward French"));
 			while(resultSet.next()){
 				System.out.println(String.format("%-5s |%-40s |%-40s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
 			}
@@ -1521,7 +1521,7 @@ class MyDatabase {
 			statement.setString(1, "%"+ward+"%");
 			statement.setString(2, "%"+ward+"%");
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-40s |%-40s |","WID", "WardE", "WardF"));
+			printHeader(String.format("%-5s |%-40s |%-40s |","WID", "Ward English", "Ward French"));
 			while(resultSet.next()){
 				System.out.println(String.format("%-5s |%-40s |%-40s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)));
 			}
