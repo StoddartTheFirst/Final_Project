@@ -675,8 +675,6 @@ class MyDatabase {
 			// 7. Participates
 			populateParticipates(electionCsv);
 
-			System.out.println("Almost there...");
-
 			// 8. ThirdParty - Vendors from Expenses
 			populateThirdPartyVendors(expensesCsv, thirdPartyMap);
 
@@ -685,6 +683,8 @@ class MyDatabase {
 
 			//third party who gives gifts
 			populateThirdPartyGift(giftsCsv, thirdPartyMap);
+
+			System.out.println("Almost there...");
 
 			// 10. Business Owners
 			Map<String, Integer> ownerMap = populateBusinessOwners(lobbyistCsv, thirdPartyMap);
