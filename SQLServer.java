@@ -1546,7 +1546,7 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT name, CID, Present, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
+			String sqlMessage = "SELECT name, Councillors.CID, Present, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%" + name + "%");
 			ResultSet resultSet = statement.executeQuery();
