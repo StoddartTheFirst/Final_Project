@@ -1546,11 +1546,11 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT name, WID, Present, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
+			String sqlMessage = "SELECT name, CID, Present, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%" + name + "%");
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |%-10s |","Councillor", "WID", "Present", "Phone", "Fax", "WebsiteURL", "Year"));
+			printHeader(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |%-10s |","Councillor", "CID", "Present", "Phone", "Fax", "WebsiteURL", "Year"));
 			while(resultSet.next()){
 				System.out.println(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |%-10s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
 			}
