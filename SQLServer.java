@@ -675,6 +675,8 @@ class MyDatabase {
 			// 7. Participates
 			populateParticipates(electionCsv);
 
+			System.out.println("Almost there...");
+
 			// 8. ThirdParty - Vendors from Expenses
 			populateThirdPartyVendors(expensesCsv, thirdPartyMap);
 
@@ -683,8 +685,6 @@ class MyDatabase {
 
 			//third party who gives gifts
 			populateThirdPartyGift(giftsCsv, thirdPartyMap);
-
-			System.out.println("Almost there...");
 
 			// 10. Business Owners
 			Map<String, Integer> ownerMap = populateBusinessOwners(lobbyistCsv, thirdPartyMap);
@@ -1477,9 +1477,9 @@ class MyDatabase {
 			String sqlMessage = "SELECT DISTINCT area FROM CouncilNeighbourhoods;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-40s |","CID", "Area"));
+			printHeader(String.format("%-30s |", "Area"));
 			while(resultSet.next()){
-				System.out.println(String.format("%-5s |%-40s |", resultSet.getString(1), resultSet.getString(2)));
+				System.out.println(String.format("%-30s |", resultSet.getString(1)));
 			}
 		}
 		catch (SQLException e)
@@ -1495,9 +1495,9 @@ class MyDatabase {
 			String sqlMessage = "SELECT TID, Name, Address, Phone, Email FROM ThirdParty;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-40s |%-20s |%-12s |%-35s |%-13s |%-10s |","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			printHeader(String.format("%-5s |%-40s |%-20s |%-12s |%-35s |","TID", "Name", "Address", "Phone", "Email"));
 			while(resultSet.next()){
-				System.out.println(String.format("%-5s |%-40s |%-20s |%-12s |%-35s |%-13s |%-10s |", resultSet.getString(1), truncateString(resultSet.getString(2), 35), truncateString(resultSet.getString(3), 15), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-5s |%-40s |%-20s |%-12s |%-35s |", resultSet.getString(1), truncateString(resultSet.getString(2), 35), truncateString(resultSet.getString(3), 15), resultSet.getString(4), resultSet.getString(5)));
 			}
 		}
 		catch (SQLException e)
@@ -1546,13 +1546,13 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Councillors.CID, WID, Present, Name, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
+			String sqlMessage = "SELECT name, WID, Present, Phone, Fax, WebsiteURL, Year FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE Councillors.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%" + name + "%");
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-5s |%-8s |%-20s |%-12s |%-12s |%-40s |%-10s |","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL", "Year"));
+			printHeader(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |%-10s |","Councillor", "WID", "Present", "Phone", "Fax", "WebsiteURL", "Year"));
 			while(resultSet.next()){
-				System.out.println(String.format("%-5s |%-5s |%-8s |%-20s |%-12s |%-12s |%-40s |%-10s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7), resultSet.getString(8)));
+				System.out.println(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |%-10s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
 			}
 		}
 		catch (SQLException e)
@@ -1565,13 +1565,13 @@ class MyDatabase {
 	{
 		try 
 		{
-			String sqlMessage = "SELECT Councillors.CID, Councillors.Name, WID, CouncilNeighbourhoods.Area, Phone, Fax FROM Councillors JOIN CouncilNeighbourhoods ON Councillors.CID=CouncilNeighbourhoods.CID WHERE CouncilNeighbourhoods.Area LIKE ?;";
+			String sqlMessage = "SELECT Councillors.Name, WID, CouncilNeighbourhoods.Area, Phone, Fax FROM Councillors JOIN CouncilNeighbourhoods ON Councillors.CID=CouncilNeighbourhoods.CID WHERE CouncilNeighbourhoods.Area LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%"+nbhString+"%");
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-20s |%-5s |%-40s |%-12s |%-12s |%-40s |","CID", "Name", "WID", "Neighbourhood Name", "Phone", "Fax", "WebsiteURL"));
+			printHeader(String.format("%-20s |%-5s |%-40s |%-12s |%-12s |", "Councillor", "WID", "Neighbourhood Name", "Phone", "Fax"));
 			while(resultSet.next()){
-				System.out.println(String.format("%-5s |%-20s |%-5s |%-40s |%-12s |%-12s |%-40s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-20s |%-5s |%-40s |%-12s |%-12s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5)));
 			}
 		} 
 		catch (SQLException e)
@@ -1584,14 +1584,14 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Councillors.* FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE YearsServed.Year=?;";
+			String sqlMessage = "SELECT name, wid, present, phone, fax, websiteurl FROM Councillors JOIN YearsServed ON Councillors.CID=YearsServed.CID WHERE YearsServed.Year=?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, year);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-5s |%-8s |%-20s |%-12s |%-12s |%-40s |","CID", "WID", "Present", "Name", "Phone", "Fax", "WebsiteURL"));
+			printHeader(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |", "Councillor", "WID", "Present", "Phone", "Fax", "WebsiteURL"));
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-5s |%-5s |%-8s |%-20s |%-12s |%-12s |%-40s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-20s |%-5s |%-8s |%-12s |%-12s |%-40s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6)));
 			}
 		}
 		catch (SQLException e)
@@ -1604,14 +1604,14 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT TID, Name, Address, Phone, Email FROM ThirdParty WHERE ThirdParty.isBusiness='TRUE' AND ThirdParty.Name LIKE ?;";
+			String sqlMessage = "SELECT Name, Address, Phone, Email FROM ThirdParty WHERE ThirdParty.isBusiness='TRUE' AND ThirdParty.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%"+name+"%");
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-40s |%-20s |%-12s |%-35s |%-13s |%-10s |","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			printHeader(String.format("%-40s |%-20s |%-12s |%-35s |","Business", "Address", "Phone", "Email"));
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-5s |%-40s |%-20s |%-12s |%-35s |%-13s |%-10s |", resultSet.getString(1), truncateString(resultSet.getString(2), 35), truncateString(resultSet.getString(3), 15), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-40s |%-20s |%-12s |%-35s |", resultSet.getString(1), truncateString(resultSet.getString(2), 35), truncateString(resultSet.getString(3), 15), resultSet.getString(4)));
 			}
 		}
 		catch (SQLException e)
@@ -1624,14 +1624,14 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT ThirdParty.TID, BusinessOwner.Name, Address, Phone, Email FROM ThirdParty JOIN Owns ON ThirdParty.TID=Owns.Business JOIN BusinessOwner ON Owns.OwnerID=BusinessOwner.OwnerID WHERE BusinessOwner.Name LIKE ?;";
+			String sqlMessage = "SELECT ThirdParty.name, BusinessOwner.Name, Address, Phone, Email FROM ThirdParty JOIN Owns ON ThirdParty.TID=Owns.Business JOIN BusinessOwner ON Owns.OwnerID=BusinessOwner.OwnerID WHERE BusinessOwner.Name LIKE ?;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, "%"+owner+"%");
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-35s |%-20s |%-12s |%-35s |%-13s |%-10s |","TID", "Name", "Address", "Phone", "Email", "isBusiness", "isVendor"));
+			printHeader(String.format("%-35s |%-35s |%-20s |%-12s |%-35s |","Business", "Owner", "Address", "Phone", "Email"));
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-5s |%-35s |%-20s |%-12s |%-35s |%-13s |%-10s |", resultSet.getString(1), truncateString(resultSet.getString(2), 30), truncateString(resultSet.getString(3), 15), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), resultSet.getString(7)));
+				System.out.println(String.format("%-35s |%-35s |%-20s |%-12s |%-35s |", truncateString(resultSet.getString(1), 30), truncateString(resultSet.getString(2), 30), truncateString(resultSet.getString(3), 15), resultSet.getString(4), resultSet.getString(5)));
 			}
 		}
 		catch (SQLException e)
@@ -1669,16 +1669,16 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT Gift.GID, DateRecorded, Councillors.CID, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent, Gift.Description, Gift.Value"
+			String sqlMessage = "SELECT Gift.description, DateRecorded, Councillors.name, RecipientSelf, RecipientDependent, RecipientStaff, Source, DateGifted, Reason, Intent, Gift.Value"
 					+ " FROM Councillors JOIN Gifts ON Councillors.CID=Gifts.Councillor JOIN Gift ON Gifts.GID=Gift.GID JOIN ThirdParty ON Gifts.Source=ThirdParty.TID"
 					+ " WHERE Councillors.CID=? ORDER BY Gifts.DateGifted DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-12s |%-5s |%-10s |%-10s |%-6s |%-30s |%-12s |%-20s |%-20s |%-20s |%-6s |","GID", "DateRecorded", "CID", "Recipient", "Dependent", "Staff", "Source", "DateGifted", "Reason", "Intent", "Description", "Value"));
+			printHeader(String.format("%-20s |%-12s |%-20s |%-10s |%-10s |%-6s |%-20s |%-12s |%-10s |%-10s |%-6s |","Gift", "DateRecorded", "Councillor", "Recipient", "Dependent", "Staff", "Source", "DateGifted", "Reason", "Intent", "Value"));
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-5s |%-12s |%-5s |%-10s |%-10s |%-6s |%-30s |%-12s |%-20s |%-20s |%-20s |%-6s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), truncateString(resultSet.getString(7), 26), resultSet.getString(8), truncateString(resultSet.getString(9), 15), truncateString(resultSet.getString(10), 15), truncateString(resultSet.getString(11), 15), resultSet.getString(12)));
+				System.out.println(String.format("%-20s |%-12s |%-20s |%-10s |%-10s |%-6s |%-20s |%-12s |%-10s |%-10s |%-6s |", truncateString(resultSet.getString(1), 15), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6), truncateString(resultSet.getString(7), 15), resultSet.getString(8), truncateString(resultSet.getString(9), 7), truncateString(resultSet.getString(10), 15), resultSet.getString(11)));
 			}
 		}
 		catch (SQLException e)
@@ -1691,16 +1691,16 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, Councillors.CID, LobbyDate, Subject, IntendedOutcome"
+			String sqlMessage = "SELECT LID, Owner, Business, ClientBusiness, Councillors.name, LobbyDate, Subject, IntendedOutcome"
 					+ " FROM Councillors JOIN Lobbies ON Councillors.CID=Lobbies.CID"
 					+ " WHERE Councillors.CID=? ORDER BY Lobbies.LobbyDate DESC;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, cid);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-5s |%-10s |%-16s |%-5s |%-12s |%-20s |%-20s |","LID", "Owner", "Business", "ClientBusiness", "CID", "Date", "Subject", "IntendedOutcome"));
+			printHeader(String.format("%-5s |%-5s |%-10s |%-16s |%-5s |%-12s |%-20s |%-20s |","LID", "Owner", "Business", "ClientBusiness", "Councillor", "Date", "Subject", "IntendedOutcome"));
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-5s |%-5s |%-10s |%-16s |%-5s |%-12s |%-20s |%-20s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), truncateString(resultSet.getString(4), 15), resultSet.getString(5), resultSet.getString(6), truncateString(resultSet.getString(7), 15), truncateString(resultSet.getString(8), 15)));
+				System.out.println(String.format("%-5s |%-5s |%-10s |%-16s |%-5s |%-12s |%-20s |%-20s |", resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), truncateString(resultSet.getString(4), 12), resultSet.getString(5), resultSet.getString(6), truncateString(resultSet.getString(7), 15), truncateString(resultSet.getString(8), 15)));
 			}
 		}
 		catch (SQLException e)
