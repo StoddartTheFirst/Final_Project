@@ -1759,17 +1759,30 @@ class MyDatabase {
 	{
 		try
 		{
-			String sqlMessage = "WITH CLobbies AS (SELECT Lobbies.CID as LCID FROM Lobbies WHERE Lobbies.LobbyDate BETWEEN ? AND ?), CGifts AS (SELECT Gifts.Councillor as GC FROM Gifts WHERE DateGifted BETWEEN ? AND ?) SELECT Councillors.CID, Councillors.name FROM Councillors WHERE NOT EXISTS (SELECT Councillors.CID, Councillors.name FROM Councillors JOIN CLobbies ON Councillors.CID=CLobbies.LCID JOIN CGifts ON Councillors.CID=CGifts.GC);";
+			String sqlMessage = "WITH CLobbies AS "
+			+"(SELECT Lobbies.CID as LCID FROM Lobbies WHERE Lobbies.LobbyDate BETWEEN ? AND ?), "
+			+"CGifts AS "
+			+"(SELECT Gifts.Councillor as GC FROM Gifts WHERE DateGifted BETWEEN ? AND ?), "
+			+"GiftLobby AS ( "
+			+"(SELECT CGifts.GC as CID FROM CGifts) "
+			+"UNION "
+			+"(SELECT CLobbies.LCID as CID FROM CLobbies) "
+			+") "
+			+"SELECT Councillors.name "
+			+"FROM Councillors "
+			+"EXCEPT "
+			+"SELECT Councillors.name "
+			+"FROM Councillors JOIN GiftLobby ON Councillors.CID=GiftLobby.CID;";
 			PreparedStatement statement = connection.prepareStatement(sqlMessage);
 			statement.setString(1, date);
 			statement.setString(2, date2);
 			statement.setString(3, date);
 			statement.setString(4, date2);
 			ResultSet resultSet = statement.executeQuery();
-			printHeader(String.format("%-5s |%-20s |", "CID", "Councillor"));
+			printHeader(String.format("%-5s |", "Councillor"));
 			while(resultSet.next())
 			{
-				System.out.println(String.format("%-5s |%-20s |", resultSet.getString(1), resultSet.getString(2)));
+				System.out.println(String.format("%-5s |", resultSet.getString(1)));
 			}
 		}
 		catch (SQLException e)
